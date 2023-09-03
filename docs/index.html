@@ -1,172 +1,249 @@
-<!DOCTYPE html>
-<html> 
-<head> 
+<html lang="en">
+<head>
     <title>Hudson Valley Landfill Leachate Explorer</title>
     <meta charset="UTF-8"> 
-
-    <!-- instruct the page to match the screen width in device-independent pixels - see https://stackoverflow.com/questions/42891630/materialize-grid-s12-not-working-in-mobile-view -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
 
-    <!-- Materialize CSS + js -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"> 
+    <!-- Materialize -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"/> 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+	<!-- icons -->
+	 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
     <!-- ArcGIS API for Javascript css + js -->
     <link rel="stylesheet" href="https://js.arcgis.com/4.26/esri/themes/light/main.css">
     <script src="https://js.arcgis.com/4.26/"></script>
-
+ 
     <!-- My CSS -->
-    <link rel="stylesheet" href="landfillLeachate.css"> 
+    <link rel="stylesheet" href="leachate.css"/>
+</head>
 
-</head> 
-<body> 
-
-    <div class="container-wide"> <!-- Materialize CSS container -->
-        <nav class="nav-wrapper indigo darken-4"> <!-- Navigation bar -->
-            <a class="brand-logo"><b>Hudson Valley Landfill Leachate Explorer</b></a> 
-        </nav>
-
-        <div class="row white"> <!-- Row for the side panel and main map -->
-            <div id="control-panel" class="col m3 hide-on-small-only"> <!-- Side panel -->
-                <p class="flow-text">This map displays the locations of active and inactive solid waste landfills in the counties of the Hudson Valley region of New York State.</p>
-                <p class="flow-text">Data:<br><a href="#">NYS GIS Clearinghouse</a></p>
-            </div>
-            
-            <div id="mapView" class="col s12 m9" style="height: 600px;"></div> <!-- Map panel-->
+<body onresize="mapSize()", onload="mapSize()">
+	
+	<!-- Title bar -->
+	<nav class="indigo darken-4">
+		<div class="nav-wrapper indigo darken-4">
+			<!-- Title bar for desktop; Hidden for mobile and tablet -->
+			<span class="hide-on-med-and-down"><a class="brand-logo"><b>Mohawk-Hudson Valley Landfill Leachate Explorer</b></a></span> 
+			<!-- Title bar for mobile and tablet. Hidden for desktop -->
+			<span class="hide-on-large-only"><a class="brand-logo center sidenav-trigger" data-target="slide-out"><i class="large material-icons">info</i></a></span>
+		</div>
+	</nav>
+	
+	<!-- Sidebar, shows on mobile and tablets -->
+	<div id="slide-out" class="sidenav">
+        <p>This map displays the locations of active and inactive solid waste landfills and municipal wastewater treatment facilities in selected counties of the Mohawk-Hudson Valley.
+		</p>
+		<p>
+			Data:<br><a href="https://data.gis.ny.gov/">NYS GIS Clearinghouse</a>
+		</p>
+		<p>
+		<a class="sidenav-close"><i class="material-icons">exit_to_app</i></a>
+		</p>
+    </div>
+	
+    <div class="wide-container"> <!-- Start of Materialize container -->
+		<div class="row white"> <!-- Row for the side panel and main map -->
+			<div id="control-panel" class="col l3 hide-on-med-and-down"> <!-- side panel div visible only on desktop; content moves to sidebar on tablet and mobile -->
+                <p>This map displays the locations of active and inactive solid waste landfills and municipal wastewater treatment facilities in selected counties of the Mohawk-Hudson Valley.
+                </p>
+                <p>
+                    Data:<br><a href="https://data.gis.ny.gov/">NYS GIS Clearinghouse</a>
+                </p>
+                <p>
+			</div>
+            <div id="mapView" class="col s12 l9" height="500px">
+			</div>
         </div> <!-- End row for the side panel and main map -->
+	</div> <!-- End Materialize container -->
 
-    </div> <!-- End Materialize CSS container -->
-    
-</body>
+<script>	
+	// Function to activate sidebar
+	document.addEventListener('DOMContentLoaded', function() {
+       var elems = document.querySelectorAll('.sidenav');
+       var instances = M.Sidenav.init(elems);
+    });
 
-<script>
-
-    // ArcGIS SDK dependencies and callback functions
+    // Function to get available window size and use it to calculate size of map div so that it fills window height
+    // This is necessary because map div doesn't work with a percentage based height
+    // Variable wih = window inner height; mapHeight is calculated by subtracting the navbar height (65)
+	function mapSize() { 
+		const wih = window.innerHeight;
+        const mapHeight = wih - 85;
+        document.getElementById("mapView").style.height = mapHeight + 'px';
+    };
+	
+	// ArcGIS SDK dependencies and callback functions
     require([
         "esri/Map",
         "esri/views/MapView", 
         "esri/widgets/LayerList", 
-        "esri/Basemap",
+        "esri/widgets/LayerList/ListItem", 
+		"esri/Basemap",
         "esri/widgets/BasemapToggle",
         "esri/layers/FeatureLayer",
         "esri/PopupTemplate",
+        "esri/widgets/Expand"
     ], function(
         Map,
         MapView, 
         LayerList, 
+		ListItem,
         Basemap,
         BasemapToggle,
         FeatureLayer, 
-        PopupTemplate
-    ) {
-        // Create the map
-        const map = new Map({
+        PopupTemplate,
+        Expand
+    ) {        
+	
+	// Create the map
+    const map = new Map({
             basemap: "topo-vector"
         });
         
-        // Add the map to a MapView
-        const mapView = new MapView({
-            container: "mapView", 
-            map: map,
-            center: [-73.934583, 41.882817],
-            zoom: 8
-        });
-        
-        // Add a layer list with legend
-        const layerList = new LayerList({
-            view: mapView,
-            listItemCreatedFunction: (event) => {
-                const item = event.item;
-                if (item.layer.type != "group") {
-                // don't show legend twice
-                item.panel = {
-                    content: "legend",
-                    open: false
-                };
-                }
-            }
-        });
-        mapView.ui.add(layerList, "top-right");
-        
-        // Add basemap toggle widget
-        const basemapToggle = new BasemapToggle({
+    // Add the map to a MapView
+    const mapView = new MapView({
+        container: "mapView", 
+        map: map,
+        center: [-73.925427, 42.468246],
+        zoom: 8
+    });
+    
+    // Add a layer list with legend
+    //const layerList = new LayerList({
+    //    view: mapView,
+    //    listItemCreatedFunction: (event) => {
+    //        const item = event.item;
+    //        if (item.layer.type != "group") {
+            // don't show legend twice
+    //        item.panel = {
+    //            content: "legend",
+    //            open: false
+    //        };
+    //        }
+    //    }
+    //});
+    //mapView.ui.add(layerList, "top-right");
+
+    // Add a layer list
+    const layerList = new LayerList({
+        view: mapView
+    });
+    const layerListExpand = new Expand({
+        expandIcon: "layers", 
+        view: mapView, 
+        content: layerList
+    });
+    mapView.ui.add(layerListExpand, "top-right");
+
+
+	// Add basemap toggle widget
+    const basemapToggle = new BasemapToggle({
             view: mapView, 
             nextBasemap: "hybrid"
         });
         mapView.ui.add(basemapToggle, "bottom-right");
         
-        // Set symbol renderers for feature layers
-        const countiesRenderer = {
-        type: "simple",  
-        symbol: {
-            type: "simple-fill",
-            color: [ 255, 128, 0, 0.5 ],
-            outline: {
-                width: 1,
-                color: "white",
-                }
+    // Set symbol renderers for feature layers
+    const countiesRenderer = {
+    type: "simple",  
+    symbol: {
+        type: "simple-fill",
+        color: [ 255, 128, 0, 0.5 ],
+        outline: {
+            width: 1,
+            color: "white",
             }
-        };
+        }
+    };
 
-        const activeRenderer = {
-        type: "simple",  
-        symbol: {
-            type: "simple-marker",  
-            size: 6,
-            color: "red",
-            }
-        };
+    const activeRenderer = {
+    type: "simple",  
+    symbol: {
+        type: "simple-marker",  
+        size: 6,
+        color: "red",
+        }
+    };
 
-        const inactiveRenderer = {
-        type: "simple",  
-        symbol: {
-            type: "simple-marker",  
-            size: 6,
-            color: "blue",
-            }
-        };
+    const inactiveRenderer = {
+    type: "simple",  
+    symbol: {
+        type: "simple-marker",  
+        size: 6,
+        color: "blue",
+        }
+    };
 
-        // Define popups
-        const activePopup = new PopupTemplate({
-            title: "Active Municipal Landfill:",
-            content: [{
-            type: "text",
-            text: "Name: {FACILITY_NAME} <br>" + "Owner: {OWNER_NAME} <br>" + "Type: {ACTIVITY_DESC} <br>" + "Regulatory Status: {REGULATORY_STATUS} <br>" + "Report link: {F2018_ANNUAL_REPORT}"
+    const muniwwtpRenderer = {
+    type: "simple",  
+    symbol: {
+        type: "simple-marker",  
+        size: 6,
+        color: "green",
+        }
+    };
+
+    // Define popups
+    const activePopup = new PopupTemplate({
+        title: "Active Municipal Landfill:",
+        content: [{
+        type: "text",
+        text: "Name: {FACILITY_NAME} <br>" + "Owner: {OWNER_NAME} <br>" + "Type: {ACTIVITY_DESC} <br>" + "Regulatory Status: {REGULATORY_STATUS} <br>" + "Report link: {F2018_ANNUAL_REPORT}"
+        }]
+    });
+
+    const inactivePopup = new PopupTemplate({
+        title: "Inactive Municipal Landfill: ",
+        content: [{
+        type: "text",
+        text: "Name: {FACILITY_NAME} <br>" + "NYS Inactive List Class: {NYS_INACT_LIST} <br>" + "Inactive Regsitration Number: {INACT_REG_NO} <br>"
             }]
-        });
+    });
 
-        const inactivePopup = new PopupTemplate({
-            title: "Inactive Municipal Landfill: ",
-            content: [{
-            type: "text",
-            text: "Name: {FACILITY_NAME} <br>" + "NYS Inactive List Class: {NYS_INACT_LIST} <br>" + "Inactive Regsitration Number: {INACT_REG_NO} <br>"
-                }]
-        });
-            
-        // Add feature layers
-        const counties = new FeatureLayer({
-            url: "https://services6.arcgis.com/EbVsqZ18sv1kVJ3k/arcgis/rest/services/NYS_Civil_Boundaries/FeatureServer/3",
-            customParameters: {"where": "NAME IN ('Albany', 'Bronx', 'Columbia', 'Delaware', 'Dutchess', 'Essex', 'Fulton', 'Greene', 'Hamilton', 'Herkimer', 'Kings', 'Lewis', 'Madison', 'Montgomery', 'New York', 'Oneida', 'Orange', 'Otsego', 'Putnam', 'Queens', 'Rensselaer', 'Rockland', 'Saratoga', 'Schenectady', 'Schoharie', 'Sullivan', 'Ulster', 'Warren', 'Washington', 'Westchester')"},
-            renderer: countiesRenderer
-        });
-        map.layers.add(counties);
+    const muniwwtpPopup = new PopupTemplate({
+        title: "Municipal Wastewater Treatment Plant: ",
+        content: [{
+        type: "text",
+        text: "District Name: {District Name} <br>" + "Receiving Water: {Receiving Water} <br>" + "SPDES ID: {SPDES Permit} <br>"
+            }]
+    });
+                    
+    // Add feature layers
+    const counties = new FeatureLayer({
+        url: "https://services6.arcgis.com/EbVsqZ18sv1kVJ3k/arcgis/rest/services/NYS_Civil_Boundaries/FeatureServer/3",
+        customParameters: {"where": "NAME IN ('Albany','Columbia','Dutchess','Fulton','Greene','Montgomery','Rensselaer','Saratoga','Schenectady','Schoharie','Ulster')"},
+        renderer: countiesRenderer
+    });
+    map.layers.add(counties);
 
-        const inactiveLandfills = new FeatureLayer({
-            url: "https://services6.arcgis.com/DZHaqZm9cxOD4CWM/arcgis/rest/services/Inactive_Solid_Waste_Landfills/FeatureServer/31",
-            customParameters: {"where": "COUNTY IN ('Albany', 'Bronx', 'Columbia', 'Delaware', 'Dutchess', 'Essex', 'Fulton', 'Greene', 'Hamilton', 'Herkimer', 'Kings', 'Lewis', 'Madison', 'Montgomery', 'New York', 'Oneida', 'Orange', 'Otsego', 'Putnam', 'Queens', 'Rensselaer', 'Rockland', 'Saratoga', 'Schenectady', 'Schoharie', 'Sullivan', 'Ulster', 'Warren', 'Washington', 'Westchester')"},
-            renderer: inactiveRenderer,
-            popupTemplate: inactivePopup
-        });
-        map.layers.add(inactiveLandfills);
+    const inactiveLandfills = new FeatureLayer({
+        url: "https://services6.arcgis.com/DZHaqZm9cxOD4CWM/arcgis/rest/services/Inactive_Solid_Waste_Landfills/FeatureServer/31",
+        customParameters: {"where": "COUNTY IN ('Albany','Columbia','Dutchess','Fulton','Greene','Montgomery','Rensselaer','Saratoga','Schenectady','Schoharie','Ulster')"},
+        renderer: inactiveRenderer,
+        popupTemplate: inactivePopup
+    });
+    map.layers.add(inactiveLandfills);
 
-        const activeLandfills = new FeatureLayer({
-            url: "https://services6.arcgis.com/DZHaqZm9cxOD4CWM/arcgis/rest/services/NYS_Active_Landfills/FeatureServer/0", 
-            customParameters: {"where": "REGION = '3' or REGION = '4' or REGION = '5' or REGION = '6'"},
-            renderer: activeRenderer,
-            popupTemplate: activePopup
-        });
-        map.layers.add(activeLandfills);
+    const activeLandfills = new FeatureLayer({
+        url: "https://services6.arcgis.com/DZHaqZm9cxOD4CWM/arcgis/rest/services/NYS_Active_Landfills/FeatureServer/12", 
+        customParameters: {"where": "REGION = '3' or REGION = '4' or REGION = '5' or REGION = '6'"},
+        renderer: activeRenderer,
+        popupTemplate: activePopup
+    });
+    map.layers.add(activeLandfills);
+
+    const muniwwtps = new FeatureLayer({
+        url: "https://services6.arcgis.com/DZHaqZm9cxOD4CWM/arcgis/rest/services/Wastewater_Facility/FeatureServer/0", 
+        customParameters: {"where": "WCS_CLASS = '05' or WCS_CLASS = '07'"},
+        renderer: muniwwtpRenderer,
+        popupTemplate: munitwwtpPopup
+    });
+    map.layers.add(muniwwtps);
 });
 
 </script>
+</body>
 </html>
+

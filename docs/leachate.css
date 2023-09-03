@@ -1,0 +1,17 @@
+html, body {
+  width: 100%; 
+  height: 100%;
+}
+
+.container-wide {  /* override Materialize container size */
+  margin: 0 auto;
+  width: 100%;
+}
+
+nav {
+  padding-left: 12px;
+}
+
+.flow-text {
+  font-size: 12pt;
+}
