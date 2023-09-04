@@ -109,22 +109,6 @@
         center: [-73.925427, 42.468246],
         zoom: 8
     });
-    
-    // Add a layer list with legend
-    //const layerList = new LayerList({
-    //    view: mapView,
-    //    listItemCreatedFunction: (event) => {
-    //        const item = event.item;
-    //        if (item.layer.type != "group") {
-            // don't show legend twice
-    //        item.panel = {
-    //            content: "legend",
-    //            open: false
-    //        };
-    //        }
-    //    }
-    //});
-    //mapView.ui.add(layerList, "top-right");
 
     // Add a layer list
     const layerList = new LayerList({
@@ -234,13 +218,13 @@
     });
     map.layers.add(activeLandfills);
 
-    const muniwwtps = new FeatureLayer({
+    const muniwwtp = new FeatureLayer({
         url: "https://services6.arcgis.com/DZHaqZm9cxOD4CWM/arcgis/rest/services/Wastewater_Facility/FeatureServer/0", 
         customParameters: {"where": "WCS_CLASS = '05' or WCS_CLASS = '07'"},
         renderer: muniwwtpRenderer,
-        popupTemplate: munitwwtpPopup
+        popupTemplate: muniwwtpPopup
     });
-    map.layers.add(muniwwtps);
+    map.layers.add(muniwwtp);
 });
 
 </script>
