@@ -169,7 +169,16 @@
         }
     };
 
-    // Define popups
+    const withdrawalRenderer = {
+    type: "simple",  
+    symbol: {
+        type: "simple-marker",  
+        size: 6,
+        color: "purple",
+        }
+    };
+
+// Define popups
     const activePopup = new PopupTemplate({
         title: "Active Municipal Landfill:",
         content: [{
@@ -191,6 +200,14 @@
         content: [{
         type: "text",
         text: "District Name: {District Name} <br>" + "Receiving Water: {Receiving Water} <br>" + "SPDES ID: {SPDES Permit} <br>"
+            }]
+    });
+
+    const withdrawalPopup = new PopupTemplate({
+        title: "Public Water Supply Withdrawal: ",
+        content: [{
+        type: "text",
+        text: "Facility Name: {Facility Name} <br>" + "Location: {Facility City} <br>"
             }]
     });
                     
@@ -218,13 +235,21 @@
     });
     map.layers.add(activeLandfills);
 
-    const muniwwtp = new FeatureLayer({
+    const muniwwtps = new FeatureLayer({
         url: "https://services6.arcgis.com/DZHaqZm9cxOD4CWM/arcgis/rest/services/Wastewater_Facility/FeatureServer/0", 
         customParameters: {"where": "WCS_CLASS = '05' or WCS_CLASS = '07'"},
         renderer: muniwwtpRenderer,
         popupTemplate: muniwwtpPopup
     });
-    map.layers.add(muniwwtp);
+    map.layers.add(muniwwtps);
+    
+    const withdrawals = new FeatureLayer({
+        url: "https://services6.arcgis.com/DZHaqZm9cxOD4CWM/arcgis/rest/services/Water_Withdrawal_Annual_Reports/FeatureServer/27", 
+        customParameters: {"where": "CATEGORY = 'Public Water Supply' and WWTYPE = 'Surface Water'"},
+        renderer: withdrawalRenderer,
+        popupTemplate: withdrawalPopup
+    });
+    map.layers.add(withdrawals);
 });
 
 </script>
