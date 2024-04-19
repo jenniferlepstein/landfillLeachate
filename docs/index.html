@@ -1,258 +1,1570 @@
+<!doctype html>
 <html lang="en">
-<head>
-    <title>Hudson Valley Landfill Leachate Explorer</title>
-    <meta charset="UTF-8"> 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-
-    <!-- Materialize -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"/> 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-
-	<!-- icons -->
-	 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-
-    <!-- ArcGIS API for Javascript css + js -->
-    <link rel="stylesheet" href="https://js.arcgis.com/4.26/esri/themes/light/main.css">
-    <script src="https://js.arcgis.com/4.26/"></script>
- 
-    <!-- My CSS -->
-    <link rel="stylesheet" href="leachate.css"/>
-</head>
-
-<body onresize="mapSize()", onload="mapSize()">
-	
-	<!-- Title bar -->
-	<nav class="indigo darken-4">
-		<div class="nav-wrapper indigo darken-4">
-			<!-- Title bar for desktop; Hidden for mobile and tablet -->
-			<span class="hide-on-med-and-down"><a class="brand-logo"><b>Mohawk-Hudson Valley Landfill Leachate Explorer</b></a></span> 
-			<!-- Title bar for mobile and tablet. Hidden for desktop -->
-			<span class="hide-on-large-only"><a class="brand-logo center sidenav-trigger" data-target="slide-out"><i class="large material-icons">info</i></a></span>
-		</div>
-	</nav>
-	
-	<!-- Sidebar, shows on mobile and tablets -->
-	<div id="slide-out" class="sidenav">
-        <p>This map displays the locations of active and inactive solid waste landfills and municipal wastewater treatment facilities in selected counties of the Mohawk-Hudson Valley.
-		</p>
-		<p>
-			Data:<br><a href="https://data.gis.ny.gov/">NYS GIS Clearinghouse</a>
-		</p>
-		<p>
-		<a class="sidenav-close"><i class="material-icons">exit_to_app</i></a>
-		</p>
-    </div>
-	
-    <div class="wide-container"> <!-- Start of Materialize container -->
-		<div class="row white"> <!-- Row for the side panel and main map -->
-			<div id="control-panel" class="col l3 hide-on-med-and-down"> <!-- side panel div visible only on desktop; content moves to sidebar on tablet and mobile -->
-                <p>This map displays the locations of active and inactive solid waste landfills and municipal wastewater treatment facilities in selected counties of the Mohawk-Hudson Valley.
-                </p>
-                <p>
-                    Data:<br><a href="https://data.gis.ny.gov/">NYS GIS Clearinghouse</a>
-                </p>
-                <p>
-			</div>
-            <div id="mapView" class="col s12 l9" height="500px">
-			</div>
-        </div> <!-- End row for the side panel and main map -->
-	</div> <!-- End Materialize container -->
-
-<script>	
-	// Function to activate sidebar
-	document.addEventListener('DOMContentLoaded', function() {
-       var elems = document.querySelectorAll('.sidenav');
-       var instances = M.Sidenav.init(elems);
-    });
-
-    // Function to get available window size and use it to calculate size of map div so that it fills window height
-    // This is necessary because map div doesn't work with a percentage based height
-    // Variable wih = window inner height; mapHeight is calculated by subtracting the navbar height (65)
-	function mapSize() { 
-		const wih = window.innerHeight;
-        const mapHeight = wih - 85;
-        document.getElementById("mapView").style.height = mapHeight + 'px';
-    };
-	
-	// ArcGIS SDK dependencies and callback functions
-    require([
-        "esri/Map",
-        "esri/views/MapView", 
-        "esri/widgets/LayerList", 
-        "esri/widgets/LayerList/ListItem", 
-		"esri/Basemap",
-        "esri/widgets/BasemapToggle",
-        "esri/layers/FeatureLayer",
-        "esri/PopupTemplate",
-        "esri/widgets/Expand"
-    ], function(
-        Map,
-        MapView, 
-        LayerList, 
-		ListItem,
-        Basemap,
-        BasemapToggle,
-        FeatureLayer, 
-        PopupTemplate,
-        Expand
-    ) {        
-	
-	// Create the map
-    const map = new Map({
-            basemap: "topo-vector"
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        </style>
+        <title>Preliminary Results: Landfill Leachate in the Hudson and Mohawk Rivers</title>
+    </head>
+    <body>
+        <div id="map">
+        </div>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/L.Control.Layers.Tree.min.js"></script>
+        <script src="js/leaflet-svg-shape-markers.min.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="data/prj_State_Shoreline_1.js"></script>
+        <script src="data/CountiesinStudyArea_2.js"></script>
+        <script src="data/MunicipalitiesinStudyArea_3.js"></script>
+        <script src="data/EPAEJSCREENDemographicIndex_4.js"></script>
+        <script src="data/DECPotentialEnvironmentalJusticeAreas_5.js"></script>
+        <script src="data/DrinkingWaterSourceTiers_6.js"></script>
+        <script src="data/DrinkingWaterConsumerMunicipalities_7.js"></script>
+        <script src="data/WaterIntakesWithdrawals_8.js"></script>
+        <script src="data/LeachateFlowsGallonsPerDay_9.js"></script>
+        <script src="data/WastewaterFacilitiesbyLeachateVolumeReceivedGallonsPerYear_10.js"></script>
+        <script src="data/WastewaterFacilitiesReceivingLeachatebyPretreatmentAuthority_11.js"></script>
+        <script src="data/InactiveLandfillsDischargingtoWWTPs_12.js"></script>
+        <script src="data/ActiveLandfillsDischargingtoWWTPs_13.js"></script>
+        <script src="data/NYSActiveLandfills_15.js"></script>
+        <script src="data/NYSInactiveLandfills_17.js"></script>
+        <script src="data/NYSWastewaterFacilities_19.js"></script>
+        <script>
+        var map = L.map('map', {
+            zoomControl:true, maxZoom:28, minZoom:1
+        }).fitBounds([[41.369793366736346,-75.48610449547292],[43.45213602091148,-72.53580121465187]]);
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        function removeEmptyRowsFromPopupContent(content, feature) {
+         var tempDiv = document.createElement('div');
+         tempDiv.innerHTML = content;
+         var rows = tempDiv.querySelectorAll('tr');
+         for (var i = 0; i < rows.length; i++) {
+             var td = rows[i].querySelector('td.visible-with-data');
+             var key = td ? td.id : '';
+             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+                 rows[i].parentNode.removeChild(rows[i]);
+             }
+         }
+         return tempDiv.innerHTML;
+        }
+        document.querySelector(".leaflet-popup-pane").addEventListener("load", function(event) {
+          var tagName = event.target.tagName,
+            popup = map._popup;
+          // Also check if flag is already set.
+          if (tagName === "IMG" && popup && !popup._updated) {
+            popup._updated = true; // Set flag to prevent looping.
+            popup.update();
+          }
+        }, true);
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+        }
+        map.createPane('pane_OpenStreetMap_0');
+        map.getPane('pane_OpenStreetMap_0').style.zIndex = 400;
+        var layer_OpenStreetMap_0 = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            pane: 'pane_OpenStreetMap_0',
+            opacity: 1.0,
+            attribution: '',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 19
         });
-        
-    // Add the map to a MapView
-    const mapView = new MapView({
-        container: "mapView", 
-        map: map,
-        center: [-73.925427, 42.468246],
-        zoom: 8
-    });
+        layer_OpenStreetMap_0;
+        map.addLayer(layer_OpenStreetMap_0);
+        function pop_prj_State_Shoreline_1(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">fid</th>\
+                        <td>' + (feature.properties['fid'] !== null ? autolinker.link(feature.properties['fid'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">OBJECTID</th>\
+                        <td>' + (feature.properties['OBJECTID'] !== null ? autolinker.link(feature.properties['OBJECTID'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">NAME</th>\
+                        <td>' + (feature.properties['NAME'] !== null ? autolinker.link(feature.properties['NAME'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">ABBREV</th>\
+                        <td>' + (feature.properties['ABBREV'] !== null ? autolinker.link(feature.properties['ABBREV'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">GNIS_ID</th>\
+                        <td>' + (feature.properties['GNIS_ID'] !== null ? autolinker.link(feature.properties['GNIS_ID'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">FIPS_CODE</th>\
+                        <td>' + (feature.properties['FIPS_CODE'] !== null ? autolinker.link(feature.properties['FIPS_CODE'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">POP1990</th>\
+                        <td>' + (feature.properties['POP1990'] !== null ? autolinker.link(feature.properties['POP1990'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">POP2000</th>\
+                        <td>' + (feature.properties['POP2000'] !== null ? autolinker.link(feature.properties['POP2000'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">POP2010</th>\
+                        <td>' + (feature.properties['POP2010'] !== null ? autolinker.link(feature.properties['POP2010'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">POP2020</th>\
+                        <td>' + (feature.properties['POP2020'] !== null ? autolinker.link(feature.properties['POP2020'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">CALC_SQ_MI</th>\
+                        <td>' + (feature.properties['CALC_SQ_MI'] !== null ? autolinker.link(feature.properties['CALC_SQ_MI'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">DATEMOD</th>\
+                        <td>' + (feature.properties['DATEMOD'] !== null ? autolinker.link(feature.properties['DATEMOD'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Shape_Length</th>\
+                        <td>' + (feature.properties['Shape_Length'] !== null ? autolinker.link(feature.properties['Shape_Length'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Shape_Area</th>\
+                        <td>' + (feature.properties['Shape_Area'] !== null ? autolinker.link(feature.properties['Shape_Area'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
+        }
 
-    // Add a layer list
-    const layerList = new LayerList({
-        view: mapView
-    });
-    const layerListExpand = new Expand({
-        expandIcon: "layers", 
-        view: mapView, 
-        content: layerList
-    });
-    mapView.ui.add(layerListExpand, "top-right");
-
-
-	// Add basemap toggle widget
-    const basemapToggle = new BasemapToggle({
-            view: mapView, 
-            nextBasemap: "hybrid"
-        });
-        mapView.ui.add(basemapToggle, "bottom-right");
-        
-    // Set symbol renderers for feature layers
-    const countiesRenderer = {
-    type: "simple",  
-    symbol: {
-        type: "simple-fill",
-        color: [ 255, 128, 0, 0.5 ],
-        outline: {
-            width: 1,
-            color: "white",
+        function style_prj_State_Shoreline_1_0() {
+            return {
+                pane: 'pane_prj_State_Shoreline_1',
+                opacity: 1,
+                color: 'rgba(118,118,118,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 0,
+                interactive: false,
             }
         }
-    };
-
-    const activeRenderer = {
-    type: "simple",  
-    symbol: {
-        type: "simple-marker",  
-        size: 6,
-        color: "red",
+        map.createPane('pane_prj_State_Shoreline_1');
+        map.getPane('pane_prj_State_Shoreline_1').style.zIndex = 401;
+        map.getPane('pane_prj_State_Shoreline_1').style['mix-blend-mode'] = 'normal';
+        var layer_prj_State_Shoreline_1 = new L.geoJson(json_prj_State_Shoreline_1, {
+            attribution: '',
+            interactive: false,
+            dataVar: 'json_prj_State_Shoreline_1',
+            layerName: 'layer_prj_State_Shoreline_1',
+            pane: 'pane_prj_State_Shoreline_1',
+            onEachFeature: pop_prj_State_Shoreline_1,
+            style: style_prj_State_Shoreline_1_0,
+        });
+        bounds_group.addLayer(layer_prj_State_Shoreline_1);
+        map.addLayer(layer_prj_State_Shoreline_1);
+        function pop_CountiesinStudyArea_2(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">fid</th>\
+                        <td>' + (feature.properties['fid'] !== null ? autolinker.link(feature.properties['fid'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">OBJECTID</th>\
+                        <td>' + (feature.properties['OBJECTID'] !== null ? autolinker.link(feature.properties['OBJECTID'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">NAME</th>\
+                        <td>' + (feature.properties['NAME'] !== null ? autolinker.link(feature.properties['NAME'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">ABBREV</th>\
+                        <td>' + (feature.properties['ABBREV'] !== null ? autolinker.link(feature.properties['ABBREV'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">GNIS_ID</th>\
+                        <td>' + (feature.properties['GNIS_ID'] !== null ? autolinker.link(feature.properties['GNIS_ID'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">FIPS_CODE</th>\
+                        <td>' + (feature.properties['FIPS_CODE'] !== null ? autolinker.link(feature.properties['FIPS_CODE'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">SWIS</th>\
+                        <td>' + (feature.properties['SWIS'] !== null ? autolinker.link(feature.properties['SWIS'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">NYSP_ZONE</th>\
+                        <td>' + (feature.properties['NYSP_ZONE'] !== null ? autolinker.link(feature.properties['NYSP_ZONE'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">POP1990</th>\
+                        <td>' + (feature.properties['POP1990'] !== null ? autolinker.link(feature.properties['POP1990'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">POP2000</th>\
+                        <td>' + (feature.properties['POP2000'] !== null ? autolinker.link(feature.properties['POP2000'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">POP2010</th>\
+                        <td>' + (feature.properties['POP2010'] !== null ? autolinker.link(feature.properties['POP2010'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">POP2020</th>\
+                        <td>' + (feature.properties['POP2020'] !== null ? autolinker.link(feature.properties['POP2020'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">DOS_LL</th>\
+                        <td>' + (feature.properties['DOS_LL'] !== null ? autolinker.link(feature.properties['DOS_LL'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">DOSLL_DATE</th>\
+                        <td>' + (feature.properties['DOSLL_DATE'] !== null ? autolinker.link(feature.properties['DOSLL_DATE'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">NYC</th>\
+                        <td>' + (feature.properties['NYC'] !== null ? autolinker.link(feature.properties['NYC'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">CALC_SQ_MI</th>\
+                        <td>' + (feature.properties['CALC_SQ_MI'] !== null ? autolinker.link(feature.properties['CALC_SQ_MI'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">DATEMOD</th>\
+                        <td>' + (feature.properties['DATEMOD'] !== null ? autolinker.link(feature.properties['DATEMOD'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Shape_Length</th>\
+                        <td>' + (feature.properties['Shape_Length'] !== null ? autolinker.link(feature.properties['Shape_Length'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Shape_Area</th>\
+                        <td>' + (feature.properties['Shape_Area'] !== null ? autolinker.link(feature.properties['Shape_Area'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
         }
-    };
 
-    const inactiveRenderer = {
-    type: "simple",  
-    symbol: {
-        type: "simple-marker",  
-        size: 6,
-        color: "blue",
+        function style_CountiesinStudyArea_2_0() {
+            return {
+                pane: 'pane_CountiesinStudyArea_2',
+                opacity: 1,
+                color: 'rgba(80,73,45,1.0)',
+                dashArray: '2.0,1.0',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(246,247,247,0.2)',
+                interactive: false,
+            }
         }
-    };
-
-    const muniwwtpRenderer = {
-    type: "simple",  
-    symbol: {
-        type: "simple-marker",  
-        size: 6,
-        color: "green",
+        map.createPane('pane_CountiesinStudyArea_2');
+        map.getPane('pane_CountiesinStudyArea_2').style.zIndex = 402;
+        map.getPane('pane_CountiesinStudyArea_2').style['mix-blend-mode'] = 'normal';
+        var layer_CountiesinStudyArea_2 = new L.geoJson(json_CountiesinStudyArea_2, {
+            attribution: '',
+            interactive: false,
+            dataVar: 'json_CountiesinStudyArea_2',
+            layerName: 'layer_CountiesinStudyArea_2',
+            pane: 'pane_CountiesinStudyArea_2',
+            onEachFeature: pop_CountiesinStudyArea_2,
+            style: style_CountiesinStudyArea_2_0,
+        });
+        bounds_group.addLayer(layer_CountiesinStudyArea_2);
+        map.addLayer(layer_CountiesinStudyArea_2);
+        function pop_MunicipalitiesinStudyArea_3(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">NAME</th>\
+                        <td>' + (feature.properties['NAME'] !== null ? autolinker.link(feature.properties['NAME'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">MUNI_TYPE</th>\
+                        <td>' + (feature.properties['MUNI_TYPE'] !== null ? autolinker.link(feature.properties['MUNI_TYPE'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">MUNITYCODE</th>\
+                        <td>' + (feature.properties['MUNITYCODE'] !== null ? autolinker.link(feature.properties['MUNITYCODE'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">COUNTY</th>\
+                        <td>' + (feature.properties['COUNTY'] !== null ? autolinker.link(feature.properties['COUNTY'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">GNIS_ID</th>\
+                        <td>' + (feature.properties['GNIS_ID'] !== null ? autolinker.link(feature.properties['GNIS_ID'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">FIPS_CODE</th>\
+                        <td>' + (feature.properties['FIPS_CODE'] !== null ? autolinker.link(feature.properties['FIPS_CODE'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">SWIS</th>\
+                        <td>' + (feature.properties['SWIS'] !== null ? autolinker.link(feature.properties['SWIS'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">POP1990</th>\
+                        <td>' + (feature.properties['POP1990'] !== null ? autolinker.link(feature.properties['POP1990'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">POP2000</th>\
+                        <td>' + (feature.properties['POP2000'] !== null ? autolinker.link(feature.properties['POP2000'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">POP2010</th>\
+                        <td>' + (feature.properties['POP2010'] !== null ? autolinker.link(feature.properties['POP2010'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">POP2020</th>\
+                        <td>' + (feature.properties['POP2020'] !== null ? autolinker.link(feature.properties['POP2020'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">DOS_LL</th>\
+                        <td>' + (feature.properties['DOS_LL'] !== null ? autolinker.link(feature.properties['DOS_LL'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">DOSLL_DATE</th>\
+                        <td>' + (feature.properties['DOSLL_DATE'] !== null ? autolinker.link(feature.properties['DOSLL_DATE'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">MAP_SYMBOL</th>\
+                        <td>' + (feature.properties['MAP_SYMBOL'] !== null ? autolinker.link(feature.properties['MAP_SYMBOL'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">CALC_SQ_MI</th>\
+                        <td>' + (feature.properties['CALC_SQ_MI'] !== null ? autolinker.link(feature.properties['CALC_SQ_MI'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">DATEMOD</th>\
+                        <td>' + (feature.properties['DATEMOD'] !== null ? autolinker.link(feature.properties['DATEMOD'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Shape_Length</th>\
+                        <td>' + (feature.properties['Shape_Length'] !== null ? autolinker.link(feature.properties['Shape_Length'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Shape_Area</th>\
+                        <td>' + (feature.properties['Shape_Area'] !== null ? autolinker.link(feature.properties['Shape_Area'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
         }
-    };
 
-    const withdrawalRenderer = {
-    type: "simple",  
-    symbol: {
-        type: "simple-marker",  
-        size: 6,
-        color: "purple",
+        function style_MunicipalitiesinStudyArea_3_0() {
+            return {
+                pane: 'pane_MunicipalitiesinStudyArea_3',
+                opacity: 1,
+                color: 'rgba(80,73,45,1.0)',
+                dashArray: '2.0,1.0',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(246,247,247,0.2)',
+                interactive: false,
+            }
         }
-    };
+        map.createPane('pane_MunicipalitiesinStudyArea_3');
+        map.getPane('pane_MunicipalitiesinStudyArea_3').style.zIndex = 403;
+        map.getPane('pane_MunicipalitiesinStudyArea_3').style['mix-blend-mode'] = 'normal';
+        var layer_MunicipalitiesinStudyArea_3 = new L.geoJson(json_MunicipalitiesinStudyArea_3, {
+            attribution: '',
+            interactive: false,
+            dataVar: 'json_MunicipalitiesinStudyArea_3',
+            layerName: 'layer_MunicipalitiesinStudyArea_3',
+            pane: 'pane_MunicipalitiesinStudyArea_3',
+            onEachFeature: pop_MunicipalitiesinStudyArea_3,
+            style: style_MunicipalitiesinStudyArea_3_0,
+        });
+        bounds_group.addLayer(layer_MunicipalitiesinStudyArea_3);
+        map.addLayer(layer_MunicipalitiesinStudyArea_3);
+        function pop_EPAEJSCREENDemographicIndex_4(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">Percent People of Color</th>\
+                        <td>' + (feature.properties['PEOPCOLORPCT'] !== null ? autolinker.link(feature.properties['PEOPCOLORPCT'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Percent Low Income</th>\
+                        <td>' + (feature.properties['LOWINCPCT'] !== null ? autolinker.link(feature.properties['LOWINCPCT'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Demographic Index (Percentile)</th>\
+                        <td>' + (feature.properties['P_DEMOGIDX_2'] !== null ? autolinker.link(feature.properties['P_DEMOGIDX_2'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Wastewater Proximity (Percentile)</th>\
+                        <td>' + (feature.properties['P_PWDIS'] !== null ? autolinker.link(feature.properties['P_PWDIS'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Wastewater Proximity EJ Index (Percentile)</th>\
+                        <td>' + (feature.properties['P_D2_PWDIS'] !== null ? autolinker.link(feature.properties['P_D2_PWDIS'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
+        }
 
-// Define popups
-    const activePopup = new PopupTemplate({
-        title: "Active Municipal Landfill:",
-        content: [{
-        type: "text",
-        text: "Name: {FACILITY_NAME} <br>" + "Owner: {OWNER_NAME} <br>" + "Type: {ACTIVITY_DESC} <br>" + "Regulatory Status: {REGULATORY_STATUS} <br>" + "Report link: {F2018_ANNUAL_REPORT}"
-        }]
-    });
+        function style_EPAEJSCREENDemographicIndex_4_0(feature) {
+            if (feature.properties['q2wHide_DEMOGIDX_2'] >= 0.038913 && feature.properties['q2wHide_DEMOGIDX_2'] <= 0.186024 ) {
+                return {
+                pane: 'pane_EPAEJSCREENDemographicIndex_4',
+                opacity: 1,
+                color: 'rgba(80,73,45,1.0)',
+                dashArray: '2.0,1.0',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(250,250,250,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['q2wHide_DEMOGIDX_2'] >= 0.186024 && feature.properties['q2wHide_DEMOGIDX_2'] <= 0.330773 ) {
+                return {
+                pane: 'pane_EPAEJSCREENDemographicIndex_4',
+                opacity: 1,
+                color: 'rgba(80,73,45,1.0)',
+                dashArray: '2.0,1.0',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(168,168,168,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['q2wHide_DEMOGIDX_2'] >= 0.330773 && feature.properties['q2wHide_DEMOGIDX_2'] <= 0.547098 ) {
+                return {
+                pane: 'pane_EPAEJSCREENDemographicIndex_4',
+                opacity: 1,
+                color: 'rgba(80,73,45,1.0)',
+                dashArray: '2.0,1.0',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(87,87,87,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['q2wHide_DEMOGIDX_2'] >= 0.547098 && feature.properties['q2wHide_DEMOGIDX_2'] <= 0.843765 ) {
+                return {
+                pane: 'pane_EPAEJSCREENDemographicIndex_4',
+                opacity: 1,
+                color: 'rgba(80,73,45,1.0)',
+                dashArray: '2.0,1.0',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(5,5,5,1.0)',
+                interactive: true,
+            }
+            }
+        }
+        map.createPane('pane_EPAEJSCREENDemographicIndex_4');
+        map.getPane('pane_EPAEJSCREENDemographicIndex_4').style.zIndex = 404;
+        map.getPane('pane_EPAEJSCREENDemographicIndex_4').style['mix-blend-mode'] = 'normal';
+        var layer_EPAEJSCREENDemographicIndex_4 = new L.geoJson(json_EPAEJSCREENDemographicIndex_4, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_EPAEJSCREENDemographicIndex_4',
+            layerName: 'layer_EPAEJSCREENDemographicIndex_4',
+            pane: 'pane_EPAEJSCREENDemographicIndex_4',
+            onEachFeature: pop_EPAEJSCREENDemographicIndex_4,
+            style: style_EPAEJSCREENDemographicIndex_4_0,
+        });
+        bounds_group.addLayer(layer_EPAEJSCREENDemographicIndex_4);
+        function pop_DECPotentialEnvironmentalJusticeAreas_5(feature, layer) {
+        }
 
-    const inactivePopup = new PopupTemplate({
-        title: "Inactive Municipal Landfill: ",
-        content: [{
-        type: "text",
-        text: "Name: {FACILITY_NAME} <br>" + "NYS Inactive List Class: {NYS_INACT_LIST} <br>" + "Inactive Regsitration Number: {INACT_REG_NO} <br>"
-            }]
-    });
+        function style_DECPotentialEnvironmentalJusticeAreas_5_0(feature) {
+            switch(String(feature.properties['q2wHide_PEJA'])) {
+                case 'Yes':
+                    return {
+                pane: 'pane_DECPotentialEnvironmentalJusticeAreas_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(171,84,211,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_DECPotentialEnvironmentalJusticeAreas_5');
+        map.getPane('pane_DECPotentialEnvironmentalJusticeAreas_5').style.zIndex = 405;
+        map.getPane('pane_DECPotentialEnvironmentalJusticeAreas_5').style['mix-blend-mode'] = 'normal';
+        var layer_DECPotentialEnvironmentalJusticeAreas_5 = new L.geoJson(json_DECPotentialEnvironmentalJusticeAreas_5, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_DECPotentialEnvironmentalJusticeAreas_5',
+            layerName: 'layer_DECPotentialEnvironmentalJusticeAreas_5',
+            pane: 'pane_DECPotentialEnvironmentalJusticeAreas_5',
+            onEachFeature: pop_DECPotentialEnvironmentalJusticeAreas_5,
+            style: style_DECPotentialEnvironmentalJusticeAreas_5_0,
+        });
+        bounds_group.addLayer(layer_DECPotentialEnvironmentalJusticeAreas_5);
+        function pop_DrinkingWaterSourceTiers_6(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">Name</th>\
+                        <td>' + (feature.properties['NAME'] !== null ? autolinker.link(feature.properties['NAME'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">County</th>\
+                        <td>' + (feature.properties['COUNTY'] !== null ? autolinker.link(feature.properties['COUNTY'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Public Water Supply Name</th>\
+                        <td>' + (feature.properties['mohawk_hudson_pws_city_pws_name'] !== null ? autolinker.link(feature.properties['mohawk_hudson_pws_city_pws_name'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Source Tier</th>\
+                        <td>' + (feature.properties['mohawk_hudson_pws_city_source_tier'] !== null ? autolinker.link(feature.properties['mohawk_hudson_pws_city_source_tier'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Direct or Purchase</th>\
+                        <td>' + (feature.properties['mohawk_hudson_pws_city_direct_or_purchase'] !== null ? autolinker.link(feature.properties['mohawk_hudson_pws_city_direct_or_purchase'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Water Source Name</th>\
+                        <td>' + (feature.properties['mohawk_hudson_pws_city_source_name'] !== null ? autolinker.link(feature.properties['mohawk_hudson_pws_city_source_name'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
+        }
 
-    const muniwwtpPopup = new PopupTemplate({
-        title: "Municipal Wastewater Treatment Plant: ",
-        content: [{
-        type: "text",
-        text: "District Name: {District Name} <br>" + "Receiving Water: {Receiving Water} <br>" + "SPDES ID: {SPDES Permit} <br>"
-            }]
-    });
+        function style_DrinkingWaterSourceTiers_6_0(feature) {
+            switch(String(feature.properties['mohawk_hudson_pws_city_source_tier'])) {
+                case '[\'Sole + Primary + Supplemental\', \'Sole\']':
+                    return {
+                pane: 'pane_DrinkingWaterSourceTiers_6',
+                opacity: 1,
+                color: 'rgba(82,82,82,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(133,121,212,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '[\'Blend\', \'Supplemental\']':
+                    return {
+                pane: 'pane_DrinkingWaterSourceTiers_6',
+                opacity: 1,
+                color: 'rgba(82,82,82,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(83,212,203,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_DrinkingWaterSourceTiers_6');
+        map.getPane('pane_DrinkingWaterSourceTiers_6').style.zIndex = 406;
+        map.getPane('pane_DrinkingWaterSourceTiers_6').style['mix-blend-mode'] = 'normal';
+        var layer_DrinkingWaterSourceTiers_6 = new L.geoJson(json_DrinkingWaterSourceTiers_6, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_DrinkingWaterSourceTiers_6',
+            layerName: 'layer_DrinkingWaterSourceTiers_6',
+            pane: 'pane_DrinkingWaterSourceTiers_6',
+            onEachFeature: pop_DrinkingWaterSourceTiers_6,
+            style: style_DrinkingWaterSourceTiers_6_0,
+        });
+        bounds_group.addLayer(layer_DrinkingWaterSourceTiers_6);
+        function pop_DrinkingWaterConsumerMunicipalities_7(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">Name</th>\
+                        <td>' + (feature.properties['NAME'] !== null ? autolinker.link(feature.properties['NAME'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">County</th>\
+                        <td>' + (feature.properties['COUNTY'] !== null ? autolinker.link(feature.properties['COUNTY'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Public Water Supply Name</th>\
+                        <td>' + (feature.properties['mohawk_hudson_pws_city_pws_name'] !== null ? autolinker.link(feature.properties['mohawk_hudson_pws_city_pws_name'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Source Tier</th>\
+                        <td>' + (feature.properties['mohawk_hudson_pws_city_source_tier'] !== null ? autolinker.link(feature.properties['mohawk_hudson_pws_city_source_tier'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Direct or Purchase</th>\
+                        <td>' + (feature.properties['mohawk_hudson_pws_city_direct_or_purchase'] !== null ? autolinker.link(feature.properties['mohawk_hudson_pws_city_direct_or_purchase'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Water Source Name</th>\
+                        <td>' + (feature.properties['mohawk_hudson_pws_city_source_name'] !== null ? autolinker.link(feature.properties['mohawk_hudson_pws_city_source_name'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
+        }
 
-    const withdrawalPopup = new PopupTemplate({
-        title: "Public Water Supply Withdrawal: ",
-        content: [{
-        type: "text",
-        text: "Facility Name: {Facility Name} <br>" + "Location: {Facility City} <br>"
-            }]
-    });
-                    
-    // Add feature layers
-    const counties = new FeatureLayer({
-        url: "https://services6.arcgis.com/EbVsqZ18sv1kVJ3k/arcgis/rest/services/NYS_Civil_Boundaries/FeatureServer/3",
-        customParameters: {"where": "NAME IN ('Albany','Columbia','Dutchess','Fulton','Greene','Montgomery','Rensselaer','Saratoga','Schenectady','Schoharie','Ulster')"},
-        renderer: countiesRenderer
-    });
-    map.layers.add(counties);
+        function style_DrinkingWaterConsumerMunicipalities_7_0(feature) {
+            switch(String(feature.properties['mohawk_hudson_pws_city_source_name'])) {
+                case 'Great Flats Aquifer':
+                    return {
+                pane: 'pane_DrinkingWaterConsumerMunicipalities_7',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(222,242,70,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Hudson River':
+                    return {
+                pane: 'pane_DrinkingWaterConsumerMunicipalities_7',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(217,132,163,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Mohawk River':
+                    return {
+                pane: 'pane_DrinkingWaterConsumerMunicipalities_7',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(30,228,155,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_DrinkingWaterConsumerMunicipalities_7');
+        map.getPane('pane_DrinkingWaterConsumerMunicipalities_7').style.zIndex = 407;
+        map.getPane('pane_DrinkingWaterConsumerMunicipalities_7').style['mix-blend-mode'] = 'normal';
+        var layer_DrinkingWaterConsumerMunicipalities_7 = new L.geoJson(json_DrinkingWaterConsumerMunicipalities_7, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_DrinkingWaterConsumerMunicipalities_7',
+            layerName: 'layer_DrinkingWaterConsumerMunicipalities_7',
+            pane: 'pane_DrinkingWaterConsumerMunicipalities_7',
+            onEachFeature: pop_DrinkingWaterConsumerMunicipalities_7,
+            style: style_DrinkingWaterConsumerMunicipalities_7_0,
+        });
+        bounds_group.addLayer(layer_DrinkingWaterConsumerMunicipalities_7);
+        function pop_WaterIntakesWithdrawals_8(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">Water District / Municipality</th>\
+                        <td>' + (feature.properties['FACILITY_N'] !== null ? autolinker.link(feature.properties['FACILITY_N'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Location</th>\
+                        <td>' + (feature.properties['FACILITY_C'] !== null ? autolinker.link(feature.properties['FACILITY_C'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Source Type</th>\
+                        <td>' + (feature.properties['WWTYPE'] !== null ? autolinker.link(feature.properties['WWTYPE'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Link to Report</th>\
+                        <td>' + (feature.properties['PDF_LINK'] !== null ? autolinker.link(feature.properties['PDF_LINK'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
+        }
 
-    const inactiveLandfills = new FeatureLayer({
-        url: "https://services6.arcgis.com/DZHaqZm9cxOD4CWM/arcgis/rest/services/Inactive_Solid_Waste_Landfills/FeatureServer/31",
-        customParameters: {"where": "COUNTY IN ('Albany','Columbia','Dutchess','Fulton','Greene','Montgomery','Rensselaer','Saratoga','Schenectady','Schoharie','Ulster')"},
-        renderer: inactiveRenderer,
-        popupTemplate: inactivePopup
-    });
-    map.layers.add(inactiveLandfills);
+        function style_WaterIntakesWithdrawals_8_0(feature) {
+            switch(String(feature.properties['WWTYPE'])) {
+                case 'Groundwater':
+                    return {
+                pane: 'pane_WaterIntakesWithdrawals_8',
+                radius: 6.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2.0,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,255,255,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Groundwater; Surface Water':
+                    return {
+                pane: 'pane_WaterIntakesWithdrawals_8',
+                shape: 'diamond',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2.0,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,255,255,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Surface Water':
+                    return {
+                pane: 'pane_WaterIntakesWithdrawals_8',
+                shape: 'triangle',
+                radius: 6.4,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2.0,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,255,255,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_WaterIntakesWithdrawals_8');
+        map.getPane('pane_WaterIntakesWithdrawals_8').style.zIndex = 408;
+        map.getPane('pane_WaterIntakesWithdrawals_8').style['mix-blend-mode'] = 'normal';
+        var layer_WaterIntakesWithdrawals_8 = new L.geoJson(json_WaterIntakesWithdrawals_8, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_WaterIntakesWithdrawals_8',
+            layerName: 'layer_WaterIntakesWithdrawals_8',
+            pane: 'pane_WaterIntakesWithdrawals_8',
+            onEachFeature: pop_WaterIntakesWithdrawals_8,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.shapeMarker(latlng, style_WaterIntakesWithdrawals_8_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_WaterIntakesWithdrawals_8);
+        map.addLayer(layer_WaterIntakesWithdrawals_8);
+        function pop_LeachateFlowsGallonsPerDay_9(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">Leachate Source (Landfill)</th>\
+                        <td>' + (feature.properties['name_origin'] !== null ? autolinker.link(feature.properties['name_origin'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Leachate Destination (WWTP)</th>\
+                        <td>' + (feature.properties['name_dest'] !== null ? autolinker.link(feature.properties['name_dest'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Flow Volume (Annual)</th>\
+                        <td>' + (feature.properties['gal_ann'] !== null ? autolinker.link(feature.properties['gal_ann'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Proportion of WWTP Flow</th>\
+                        <td>' + (feature.properties['per_wwtp_flow'] !== null ? autolinker.link(feature.properties['per_wwtp_flow'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Flow Volume (Daily)</th>\
+                        <td>' + (feature.properties['gal_daily'] !== null ? autolinker.link(feature.properties['gal_daily'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
+        }
 
-    const activeLandfills = new FeatureLayer({
-        url: "https://services6.arcgis.com/DZHaqZm9cxOD4CWM/arcgis/rest/services/NYS_Active_Landfills/FeatureServer/12", 
-        customParameters: {"where": "REGION = '3' or REGION = '4' or REGION = '5' or REGION = '6'"},
-        renderer: activeRenderer,
-        popupTemplate: activePopup
-    });
-    map.layers.add(activeLandfills);
+        function style_LeachateFlowsGallonsPerDay_9_0(feature) {
+            switch(String(feature.properties['gal_daily'])) {
+                case '[462, 601, 1189, 1370, 4216, 4695, \'16423\']':
+                    return {
+                pane: 'pane_LeachateFlowsGallonsPerDay_9',
+                opacity: 1,
+                color: 'rgba(207,73,46,1.0)',
+                dashArray: '',
+                lineCap: 'round',
+                lineJoin: 'round',
+                weight: 2.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case '[44900, 55251, 51173]':
+                    return {
+                pane: 'pane_LeachateFlowsGallonsPerDay_9',
+                opacity: 1,
+                color: 'rgba(207,73,46,1.0)',
+                dashArray: '',
+                lineCap: 'round',
+                lineJoin: 'round',
+                weight: 6.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_LeachateFlowsGallonsPerDay_9');
+        map.getPane('pane_LeachateFlowsGallonsPerDay_9').style.zIndex = 409;
+        map.getPane('pane_LeachateFlowsGallonsPerDay_9').style['mix-blend-mode'] = 'normal';
+        var layer_LeachateFlowsGallonsPerDay_9 = new L.geoJson(json_LeachateFlowsGallonsPerDay_9, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_LeachateFlowsGallonsPerDay_9',
+            layerName: 'layer_LeachateFlowsGallonsPerDay_9',
+            pane: 'pane_LeachateFlowsGallonsPerDay_9',
+            onEachFeature: pop_LeachateFlowsGallonsPerDay_9,
+            style: style_LeachateFlowsGallonsPerDay_9_0,
+        });
+        bounds_group.addLayer(layer_LeachateFlowsGallonsPerDay_9);
+        function pop_WastewaterFacilitiesbyLeachateVolumeReceivedGallonsPerYear_10(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">SPDES Permit ID</th>\
+                        <td>' + (feature.properties['SPDES_PERM'] !== null ? autolinker.link(feature.properties['SPDES_PERM'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Class</th>\
+                        <td>' + (feature.properties['WCS_CLASS'] !== null ? autolinker.link(feature.properties['WCS_CLASS'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">District Name</th>\
+                        <td>' + (feature.properties['DISTRICT_N'] !== null ? autolinker.link(feature.properties['DISTRICT_N'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Receiving Water</th>\
+                        <td>' + (feature.properties['RECEIVING_'] !== null ? autolinker.link(feature.properties['RECEIVING_'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Leachate Gallons Received (Annual)</th>\
+                        <td>' + (feature.properties['gal_ann'] !== null ? autolinker.link(feature.properties['gal_ann'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Pretreatment Program Authority</th>\
+                        <td>' + (feature.properties['ptx_auth'] !== null ? autolinker.link(feature.properties['ptx_auth'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
+        }
 
-    const muniwwtps = new FeatureLayer({
-        url: "https://services6.arcgis.com/DZHaqZm9cxOD4CWM/arcgis/rest/services/Wastewater_Facility/FeatureServer/0", 
-        customParameters: {"where": "WCS_CLASS = '05' or WCS_CLASS = '07'"},
-        renderer: muniwwtpRenderer,
-        popupTemplate: muniwwtpPopup
-    });
-    map.layers.add(muniwwtps);
-    
-    const withdrawals = new FeatureLayer({
-        url: "https://services6.arcgis.com/DZHaqZm9cxOD4CWM/arcgis/rest/services/Water_Withdrawal_Annual_Reports/FeatureServer/27", 
-        customParameters: {"where": "CATEGORY = 'Public Water Supply' and WWTYPE = 'Surface Water'"},
-        renderer: withdrawalRenderer,
-        popupTemplate: withdrawalPopup
-    });
-    map.layers.add(withdrawals);
-});
+        function style_WastewaterFacilitiesbyLeachateVolumeReceivedGallonsPerYear_10_0(feature) {
+            if (feature.properties['gal_ann'] >= 0.000000 && feature.properties['gal_ann'] <= 0.000000 ) {
+                return {
+                pane: 'pane_WastewaterFacilitiesbyLeachateVolumeReceivedGallonsPerYear_10',
+                shape: 'diamond',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(63,0,125,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['gal_ann'] >= 0.000000 && feature.properties['gal_ann'] <= 14946407.000000 ) {
+                return {
+                pane: 'pane_WastewaterFacilitiesbyLeachateVolumeReceivedGallonsPerYear_10',
+                shape: 'diamond',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,144,53,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['gal_ann'] >= 14946407.000000 && feature.properties['gal_ann'] <= 29892814.000000 ) {
+                return {
+                pane: 'pane_WastewaterFacilitiesbyLeachateVolumeReceivedGallonsPerYear_10',
+                shape: 'diamond',
+                radius: 6.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,144,53,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['gal_ann'] >= 29892814.000000 && feature.properties['gal_ann'] <= 44839221.000000 ) {
+                return {
+                pane: 'pane_WastewaterFacilitiesbyLeachateVolumeReceivedGallonsPerYear_10',
+                shape: 'diamond',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,144,53,1.0)',
+                interactive: true,
+            }
+            }
+        }
+        map.createPane('pane_WastewaterFacilitiesbyLeachateVolumeReceivedGallonsPerYear_10');
+        map.getPane('pane_WastewaterFacilitiesbyLeachateVolumeReceivedGallonsPerYear_10').style.zIndex = 410;
+        map.getPane('pane_WastewaterFacilitiesbyLeachateVolumeReceivedGallonsPerYear_10').style['mix-blend-mode'] = 'normal';
+        var layer_WastewaterFacilitiesbyLeachateVolumeReceivedGallonsPerYear_10 = new L.geoJson(json_WastewaterFacilitiesbyLeachateVolumeReceivedGallonsPerYear_10, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_WastewaterFacilitiesbyLeachateVolumeReceivedGallonsPerYear_10',
+            layerName: 'layer_WastewaterFacilitiesbyLeachateVolumeReceivedGallonsPerYear_10',
+            pane: 'pane_WastewaterFacilitiesbyLeachateVolumeReceivedGallonsPerYear_10',
+            onEachFeature: pop_WastewaterFacilitiesbyLeachateVolumeReceivedGallonsPerYear_10,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.shapeMarker(latlng, style_WastewaterFacilitiesbyLeachateVolumeReceivedGallonsPerYear_10_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_WastewaterFacilitiesbyLeachateVolumeReceivedGallonsPerYear_10);
+        map.addLayer(layer_WastewaterFacilitiesbyLeachateVolumeReceivedGallonsPerYear_10);
+        function pop_WastewaterFacilitiesReceivingLeachatebyPretreatmentAuthority_11(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">SPDES ID</th>\
+                        <td>' + (feature.properties['SPDES_PERM'] !== null ? autolinker.link(feature.properties['SPDES_PERM'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Class</th>\
+                        <td>' + (feature.properties['WCS_CLASS'] !== null ? autolinker.link(feature.properties['WCS_CLASS'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">District Name</th>\
+                        <td>' + (feature.properties['DISTRICT_N'] !== null ? autolinker.link(feature.properties['DISTRICT_N'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Receiving Water</th>\
+                        <td>' + (feature.properties['RECEIVING_'] !== null ? autolinker.link(feature.properties['RECEIVING_'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Link to SPDES Permit</th>\
+                        <td>' + (feature.properties['DETAIL_URL'] !== null ? autolinker.link(feature.properties['DETAIL_URL'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Leachate Gallons Received (Annual)</th>\
+                        <td>' + (feature.properties['gal_ann'] !== null ? autolinker.link(feature.properties['gal_ann'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Pretreatment Program Authority</th>\
+                        <td>' + (feature.properties['ptx_auth'] !== null ? autolinker.link(feature.properties['ptx_auth'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
+        }
 
-</script>
-</body>
+        function style_WastewaterFacilitiesReceivingLeachatebyPretreatmentAuthority_11_0(feature) {
+            switch(String(feature.properties['ptx_auth'])) {
+                case 'EPA':
+                    return {
+                pane: 'pane_WastewaterFacilitiesReceivingLeachatebyPretreatmentAuthority_11',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(221,83,95,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'None':
+                    return {
+                pane: 'pane_WastewaterFacilitiesReceivingLeachatebyPretreatmentAuthority_11',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(163,227,74,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'NYS':
+                    return {
+                pane: 'pane_WastewaterFacilitiesReceivingLeachatebyPretreatmentAuthority_11',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(130,69,221,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_WastewaterFacilitiesReceivingLeachatebyPretreatmentAuthority_11');
+        map.getPane('pane_WastewaterFacilitiesReceivingLeachatebyPretreatmentAuthority_11').style.zIndex = 411;
+        map.getPane('pane_WastewaterFacilitiesReceivingLeachatebyPretreatmentAuthority_11').style['mix-blend-mode'] = 'normal';
+        var layer_WastewaterFacilitiesReceivingLeachatebyPretreatmentAuthority_11 = new L.geoJson(json_WastewaterFacilitiesReceivingLeachatebyPretreatmentAuthority_11, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_WastewaterFacilitiesReceivingLeachatebyPretreatmentAuthority_11',
+            layerName: 'layer_WastewaterFacilitiesReceivingLeachatebyPretreatmentAuthority_11',
+            pane: 'pane_WastewaterFacilitiesReceivingLeachatebyPretreatmentAuthority_11',
+            onEachFeature: pop_WastewaterFacilitiesReceivingLeachatebyPretreatmentAuthority_11,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_WastewaterFacilitiesReceivingLeachatebyPretreatmentAuthority_11_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_WastewaterFacilitiesReceivingLeachatebyPretreatmentAuthority_11);
+        function pop_InactiveLandfillsDischargingtoWWTPs_12(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">Facility Name</th>\
+                        <td>' + (feature.properties['FACILITY_N'] !== null ? autolinker.link(feature.properties['FACILITY_N'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">City</th>\
+                        <td>' + (feature.properties['CITY'] !== null ? autolinker.link(feature.properties['CITY'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">County</th>\
+                        <td>' + (feature.properties['COUNTY'] !== null ? autolinker.link(feature.properties['COUNTY'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
+        }
+
+        function style_InactiveLandfillsDischargingtoWWTPs_12_0() {
+            return {
+                pane: 'pane_InactiveLandfillsDischargingtoWWTPs_12',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(233,196,106,1.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_InactiveLandfillsDischargingtoWWTPs_12');
+        map.getPane('pane_InactiveLandfillsDischargingtoWWTPs_12').style.zIndex = 412;
+        map.getPane('pane_InactiveLandfillsDischargingtoWWTPs_12').style['mix-blend-mode'] = 'normal';
+        var layer_InactiveLandfillsDischargingtoWWTPs_12 = new L.geoJson(json_InactiveLandfillsDischargingtoWWTPs_12, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_InactiveLandfillsDischargingtoWWTPs_12',
+            layerName: 'layer_InactiveLandfillsDischargingtoWWTPs_12',
+            pane: 'pane_InactiveLandfillsDischargingtoWWTPs_12',
+            onEachFeature: pop_InactiveLandfillsDischargingtoWWTPs_12,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_InactiveLandfillsDischargingtoWWTPs_12_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_InactiveLandfillsDischargingtoWWTPs_12);
+        map.addLayer(layer_InactiveLandfillsDischargingtoWWTPs_12);
+        function pop_ActiveLandfillsDischargingtoWWTPs_13(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">DEC Region</th>\
+                        <td>' + (feature.properties['REGION'] !== null ? autolinker.link(feature.properties['REGION'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Facility Name</th>\
+                        <td>' + (feature.properties['FACILITY_N'] !== null ? autolinker.link(feature.properties['FACILITY_N'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">City</th>\
+                        <td>' + (feature.properties['CITY'] !== null ? autolinker.link(feature.properties['CITY'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Owner Name</th>\
+                        <td>' + (feature.properties['OWNER_NAME'] !== null ? autolinker.link(feature.properties['OWNER_NAME'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Type</th>\
+                        <td>' + (feature.properties['ACTIVITY_D'] !== null ? autolinker.link(feature.properties['ACTIVITY_D'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
+        }
+
+        function style_ActiveLandfillsDischargingtoWWTPs_13_0() {
+            return {
+                pane: 'pane_ActiveLandfillsDischargingtoWWTPs_13',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(44,67,76,1.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_ActiveLandfillsDischargingtoWWTPs_13');
+        map.getPane('pane_ActiveLandfillsDischargingtoWWTPs_13').style.zIndex = 413;
+        map.getPane('pane_ActiveLandfillsDischargingtoWWTPs_13').style['mix-blend-mode'] = 'normal';
+        var layer_ActiveLandfillsDischargingtoWWTPs_13 = new L.geoJson(json_ActiveLandfillsDischargingtoWWTPs_13, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_ActiveLandfillsDischargingtoWWTPs_13',
+            layerName: 'layer_ActiveLandfillsDischargingtoWWTPs_13',
+            pane: 'pane_ActiveLandfillsDischargingtoWWTPs_13',
+            onEachFeature: pop_ActiveLandfillsDischargingtoWWTPs_13,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_ActiveLandfillsDischargingtoWWTPs_13_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_ActiveLandfillsDischargingtoWWTPs_13);
+        map.addLayer(layer_ActiveLandfillsDischargingtoWWTPs_13);
+        map.createPane('pane_NYSActiveLandfillsDensityMap_14');
+        map.getPane('pane_NYSActiveLandfillsDensityMap_14').style.zIndex = 414;
+        var img_NYSActiveLandfillsDensityMap_14 = 'data/NYSActiveLandfillsDensityMap_14.png';
+        var img_bounds_NYSActiveLandfillsDensityMap_14 = [[39.706340286414616,-80.92753882642796],[45.87370456062542,-71.43780883523254]];
+        var layer_NYSActiveLandfillsDensityMap_14 = new L.imageOverlay(img_NYSActiveLandfillsDensityMap_14,
+                                              img_bounds_NYSActiveLandfillsDensityMap_14,
+                                              {pane: 'pane_NYSActiveLandfillsDensityMap_14'});
+        bounds_group.addLayer(layer_NYSActiveLandfillsDensityMap_14);
+        function pop_NYSActiveLandfills_15(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">DEC Region</th>\
+                        <td>' + (feature.properties['REGION'] !== null ? autolinker.link(feature.properties['REGION'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Facility Name</th>\
+                        <td>' + (feature.properties['FACILITY_N'] !== null ? autolinker.link(feature.properties['FACILITY_N'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">City</th>\
+                        <td>' + (feature.properties['CITY'] !== null ? autolinker.link(feature.properties['CITY'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Owner Name</th>\
+                        <td>' + (feature.properties['OWNER_NAME'] !== null ? autolinker.link(feature.properties['OWNER_NAME'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Type</th>\
+                        <td>' + (feature.properties['ACTIVITY_D'] !== null ? autolinker.link(feature.properties['ACTIVITY_D'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
+        }
+
+        function style_NYSActiveLandfills_15_0() {
+            return {
+                pane: 'pane_NYSActiveLandfills_15',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(22,70,83,1.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_NYSActiveLandfills_15');
+        map.getPane('pane_NYSActiveLandfills_15').style.zIndex = 415;
+        map.getPane('pane_NYSActiveLandfills_15').style['mix-blend-mode'] = 'normal';
+        var layer_NYSActiveLandfills_15 = new L.geoJson(json_NYSActiveLandfills_15, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_NYSActiveLandfills_15',
+            layerName: 'layer_NYSActiveLandfills_15',
+            pane: 'pane_NYSActiveLandfills_15',
+            onEachFeature: pop_NYSActiveLandfills_15,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_NYSActiveLandfills_15_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_NYSActiveLandfills_15);
+        map.createPane('pane_NYSInactiveLandfillsDensityMap_16');
+        map.getPane('pane_NYSInactiveLandfillsDensityMap_16').style.zIndex = 416;
+        var img_NYSInactiveLandfillsDensityMap_16 = 'data/NYSInactiveLandfillsDensityMap_16.png';
+        var img_bounds_NYSInactiveLandfillsDensityMap_16 = [[39.48516879456244,-81.24806332790398],[45.91743346836444,-70.41646467935263]];
+        var layer_NYSInactiveLandfillsDensityMap_16 = new L.imageOverlay(img_NYSInactiveLandfillsDensityMap_16,
+                                              img_bounds_NYSInactiveLandfillsDensityMap_16,
+                                              {pane: 'pane_NYSInactiveLandfillsDensityMap_16'});
+        bounds_group.addLayer(layer_NYSInactiveLandfillsDensityMap_16);
+        function pop_NYSInactiveLandfills_17(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">Facility Name</th>\
+                        <td>' + (feature.properties['FACILITY_N'] !== null ? autolinker.link(feature.properties['FACILITY_N'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">City</th>\
+                        <td>' + (feature.properties['CITY'] !== null ? autolinker.link(feature.properties['CITY'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">County</th>\
+                        <td>' + (feature.properties['COUNTY'] !== null ? autolinker.link(feature.properties['COUNTY'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
+        }
+
+        function style_NYSInactiveLandfills_17_0() {
+            return {
+                pane: 'pane_NYSInactiveLandfills_17',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(233,196,106,1.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_NYSInactiveLandfills_17');
+        map.getPane('pane_NYSInactiveLandfills_17').style.zIndex = 417;
+        map.getPane('pane_NYSInactiveLandfills_17').style['mix-blend-mode'] = 'normal';
+        var layer_NYSInactiveLandfills_17 = new L.geoJson(json_NYSInactiveLandfills_17, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_NYSInactiveLandfills_17',
+            layerName: 'layer_NYSInactiveLandfills_17',
+            pane: 'pane_NYSInactiveLandfills_17',
+            onEachFeature: pop_NYSInactiveLandfills_17,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_NYSInactiveLandfills_17_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_NYSInactiveLandfills_17);
+        map.createPane('pane_NYSWastewaterFacilitiesDensityMap_18');
+        map.getPane('pane_NYSWastewaterFacilitiesDensityMap_18').style.zIndex = 418;
+        var img_NYSWastewaterFacilitiesDensityMap_18 = 'data/NYSWastewaterFacilitiesDensityMap_18.png';
+        var img_bounds_NYSWastewaterFacilitiesDensityMap_18 = [[39.492619420092375,-81.28984788186216],[45.90881770093755,-70.39594296778742]];
+        var layer_NYSWastewaterFacilitiesDensityMap_18 = new L.imageOverlay(img_NYSWastewaterFacilitiesDensityMap_18,
+                                              img_bounds_NYSWastewaterFacilitiesDensityMap_18,
+                                              {pane: 'pane_NYSWastewaterFacilitiesDensityMap_18'});
+        bounds_group.addLayer(layer_NYSWastewaterFacilitiesDensityMap_18);
+        function pop_NYSWastewaterFacilities_19(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">SPDES ID</th>\
+                        <td>' + (feature.properties['SPDES_PERM'] !== null ? autolinker.link(feature.properties['SPDES_PERM'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Class</th>\
+                        <td>' + (feature.properties['WCS_CLASS'] !== null ? autolinker.link(feature.properties['WCS_CLASS'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">District Name</th>\
+                        <td>' + (feature.properties['DISTRICT_N'] !== null ? autolinker.link(feature.properties['DISTRICT_N'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Receiving Water</th>\
+                        <td>' + (feature.properties['RECEIVING_'] !== null ? autolinker.link(feature.properties['RECEIVING_'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
+        }
+
+        function style_NYSWastewaterFacilities_19_0() {
+            return {
+                pane: 'pane_NYSWastewaterFacilities_19',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(229,182,213,1.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_NYSWastewaterFacilities_19');
+        map.getPane('pane_NYSWastewaterFacilities_19').style.zIndex = 419;
+        map.getPane('pane_NYSWastewaterFacilities_19').style['mix-blend-mode'] = 'normal';
+        var layer_NYSWastewaterFacilities_19 = new L.geoJson(json_NYSWastewaterFacilities_19, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_NYSWastewaterFacilities_19',
+            layerName: 'layer_NYSWastewaterFacilities_19',
+            pane: 'pane_NYSWastewaterFacilities_19',
+            onEachFeature: pop_NYSWastewaterFacilities_19,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_NYSWastewaterFacilities_19_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_NYSWastewaterFacilities_19);
+            var title = new L.Control();
+            title.onAdd = function (map) {
+                this._div = L.DomUtil.create('div', 'info');
+                this.update();
+                return this._div;
+            };
+            title.update = function () {
+                this._div.innerHTML = '<h2>Preliminary Results: Landfill Leachate in the Hudson and Mohawk Rivers</h2>';
+            };
+            title.addTo(map);
+            var abstract = new L.Control({'position':'topleft'});
+            abstract.onAdd = function (map) {
+                this._div = L.DomUtil.create('div',
+                'leaflet-control abstract');
+                this._div.id = 'abstract'
+                    this._div.setAttribute("onmouseenter", "abstract.show()");
+                    this._div.setAttribute("onmouseleave", "abstract.hide()");
+                    this.hide();
+                    return this._div;
+                };
+                abstract.hide = function () {
+                    this._div.classList.remove("abstractUncollapsed");
+                    this._div.classList.add("abstract");
+                    this._div.innerHTML = 'i'
+                }
+                abstract.show = function () {
+                    this._div.classList.remove("abstract");
+                    this._div.classList.add("abstractUncollapsed");
+                    this._div.innerHTML = 'This map shows preliminary results for our project, \'The Threat of Landfill Leachate to Drinking Water in the Hudson and Mohawk Rivers.\'<br /><br />The link is not for sharing widely, so please don\'t. Once results are final, the information will be shared widely. ';
+            };
+            abstract.addTo(map);
+        var baseMaps = {};
+        var overlaysTree = [
+        {label: '<b>Overview</b>', selectAllCheckbox: true, children: [
+            {label: '<img src="legend/NYSWastewaterFacilities_19.png" /> NYS Wastewater Facilities', layer: layer_NYSWastewaterFacilities_19},
+            {label: "NYS Wastewater Facilities Density Map", layer: layer_NYSWastewaterFacilitiesDensityMap_18},
+            {label: '<img src="legend/NYSInactiveLandfills_17.png" /> NYS Inactive Landfills', layer: layer_NYSInactiveLandfills_17},
+            {label: "NYS Inactive Landfills Density Map", layer: layer_NYSInactiveLandfillsDensityMap_16},
+            {label: '<img src="legend/NYSActiveLandfills_15.png" /> NYS Active Landfills', layer: layer_NYSActiveLandfills_15},
+            {label: "NYS Active Landfills Density Map", layer: layer_NYSActiveLandfillsDensityMap_14},]},
+        {label: '<b>Leachate Flows</b>', selectAllCheckbox: true, children: [
+            {label: '<img src="legend/ActiveLandfillsDischargingtoWWTPs_13.png" /> Active Landfills Discharging to WWTPs', layer: layer_ActiveLandfillsDischargingtoWWTPs_13},
+            {label: '<img src="legend/InactiveLandfillsDischargingtoWWTPs_12.png" /> Inactive Landfills Discharging to WWTPs', layer: layer_InactiveLandfillsDischargingtoWWTPs_12},
+            {label: 'Wastewater Facilities Receiving Leachate (by Pretreatment Authority)<br /><table><tr><td style="text-align: center;"><img src="legend/WastewaterFacilitiesReceivingLeachatebyPretreatmentAuthority_11_EPA0.png" /></td><td>EPA</td></tr><tr><td style="text-align: center;"><img src="legend/WastewaterFacilitiesReceivingLeachatebyPretreatmentAuthority_11_None1.png" /></td><td>None</td></tr><tr><td style="text-align: center;"><img src="legend/WastewaterFacilitiesReceivingLeachatebyPretreatmentAuthority_11_NYS2.png" /></td><td>NYS</td></tr></table>', layer: layer_WastewaterFacilitiesReceivingLeachatebyPretreatmentAuthority_11},
+            {label: 'Wastewater Facilities by Leachate Volume Received (Gallons Per Year)<br /><table><tr><td style="text-align: center;"><img src="legend/WastewaterFacilitiesbyLeachateVolumeReceivedGallonsPerYear_10_Unknown0.png" /></td><td>Unknown</td></tr><tr><td style="text-align: center;"><img src="legend/WastewaterFacilitiesbyLeachateVolumeReceivedGallonsPerYear_10_Upto150000001.png" /></td><td>Up to 15,000,000</td></tr><tr><td style="text-align: center;"><img src="legend/WastewaterFacilitiesbyLeachateVolumeReceivedGallonsPerYear_10_15000000300000002.png" /></td><td>15,000,000 - 30,000,000</td></tr><tr><td style="text-align: center;"><img src="legend/WastewaterFacilitiesbyLeachateVolumeReceivedGallonsPerYear_10_30000000450000003.png" /></td><td>30,000,000 - 45,000,000</td></tr></table>', layer: layer_WastewaterFacilitiesbyLeachateVolumeReceivedGallonsPerYear_10},
+            {label: 'Leachate Flows (Gallons Per Day)<br /><table><tr><td style="text-align: center;"><img src="legend/LeachateFlowsGallonsPerDay_9_Lessthan250000.png" /></td><td>Less than 25,000</td></tr><tr><td style="text-align: center;"><img src="legend/LeachateFlowsGallonsPerDay_9_25000orMore1.png" /></td><td>25,000 or More</td></tr></table>', layer: layer_LeachateFlowsGallonsPerDay_9},]},
+        {label: '<b>Drinking Water</b>', selectAllCheckbox: true, children: [
+            {label: 'Water Intakes (Withdrawals)<br /><table><tr><td style="text-align: center;"><img src="legend/WaterIntakesWithdrawals_8_Groundwater0.png" /></td><td>Groundwater</td></tr><tr><td style="text-align: center;"><img src="legend/WaterIntakesWithdrawals_8_GroundwaterSurfaceWater1.png" /></td><td>Groundwater & Surface Water</td></tr><tr><td style="text-align: center;"><img src="legend/WaterIntakesWithdrawals_8_SurfaceWater2.png" /></td><td>Surface Water</td></tr></table>', layer: layer_WaterIntakesWithdrawals_8},
+            {label: 'Drinking Water Consumer Municipalities<br /><table><tr><td style="text-align: center;"><img src="legend/DrinkingWaterConsumerMunicipalities_7_GreatFlatsAquifer0.png" /></td><td>Great Flats Aquifer</td></tr><tr><td style="text-align: center;"><img src="legend/DrinkingWaterConsumerMunicipalities_7_HudsonRiver1.png" /></td><td>Hudson River</td></tr><tr><td style="text-align: center;"><img src="legend/DrinkingWaterConsumerMunicipalities_7_MohawkRiver2.png" /></td><td>Mohawk River</td></tr></table>', layer: layer_DrinkingWaterConsumerMunicipalities_7},
+            {label: 'Drinking Water Source Tiers<br /><table><tr><td style="text-align: center;"><img src="legend/DrinkingWaterSourceTiers_6_PrimarySole0.png" /></td><td>Primary / Sole</td></tr><tr><td style="text-align: center;"><img src="legend/DrinkingWaterSourceTiers_6_BlendSupplement1.png" /></td><td>Blend / Supplement</td></tr></table>', layer: layer_DrinkingWaterSourceTiers_6},]},
+        {label: '<b>Demographics / Environmental Justice</b>', selectAllCheckbox: true, children: [
+            {label: 'DEC Potential Environmental Justice Areas<br /><table><tr><td style="text-align: center;"><img src="legend/DECPotentialEnvironmentalJusticeAreas_5_PEJA0.png" /></td><td>PEJA</td></tr></table>', layer: layer_DECPotentialEnvironmentalJusticeAreas_5},
+            {label: 'EPA EJSCREEN Demographic Index<br /><table><tr><td style="text-align: center;"><img src="legend/EPAEJSCREENDemographicIndex_4_0040190.png" /></td><td>0.04 - 0.19</td></tr><tr><td style="text-align: center;"><img src="legend/EPAEJSCREENDemographicIndex_4_0190331.png" /></td><td>0.19 - 0.33</td></tr><tr><td style="text-align: center;"><img src="legend/EPAEJSCREENDemographicIndex_4_0330552.png" /></td><td>0.33 - 0.55</td></tr><tr><td style="text-align: center;"><img src="legend/EPAEJSCREENDemographicIndex_4_0550843.png" /></td><td>0.55 - 0.84</td></tr></table>', layer: layer_EPAEJSCREENDemographicIndex_4},]},
+        {label: '<b>Basemap - Bottom Layer</b>', selectAllCheckbox: true, children: [
+            {label: '<img src="legend/MunicipalitiesinStudyArea_3.png" /> Municipalities in Study Area', layer: layer_MunicipalitiesinStudyArea_3},
+            {label: '<img src="legend/CountiesinStudyArea_2.png" /> Counties in Study Area', layer: layer_CountiesinStudyArea_2},
+            {label: '<img src="legend/prj_State_Shoreline_1.png" /> prj_State_Shoreline', layer: layer_prj_State_Shoreline_1},
+            {label: "OpenStreetMap", layer: layer_OpenStreetMap_0},]},]
+        var lay = L.control.layers.tree(null, overlaysTree,{
+            //namedToggle: true,
+            //selectorBack: false,
+            //closedSymbol: '&#8862; &#x1f5c0;',
+            //openedSymbol: '&#8863; &#x1f5c1;',
+            //collapseAll: 'Collapse all',
+            //expandAll: 'Expand all',
+            collapsed: false, 
+        });
+        lay.addTo(map);
+        setBounds();
+        var i = 0;
+        layer_LeachateFlowsGallonsPerDay_9.eachLayer(function(layer) {
+            var context = {
+                feature: layer.feature,
+                variables: {}
+            };
+            layer.bindTooltip((layer.feature.properties['gal_daily'] !== null?String('<div style="color: #323232; font-size: 8pt; font-weight: bold; font-family: \'Arial\', sans-serif;">' + layer.feature.properties['gal_daily']) + '</div>':''), {permanent: true, offset: [-0, -16], className: 'css_LeachateFlowsGallonsPerDay_9'});
+            labels.push(layer);
+            totalMarkers += 1;
+              layer.added = true;
+              addLabel(layer, i);
+              i++;
+        });
+        L.ImageOverlay.include({
+            getBounds: function () {
+                return this._bounds;
+            }
+        });
+        resetLabels([layer_WaterIntakesWithdrawals_8,layer_LeachateFlowsGallonsPerDay_9,layer_WastewaterFacilitiesbyLeachateVolumeReceivedGallonsPerYear_10,layer_InactiveLandfillsDischargingtoWWTPs_12,layer_ActiveLandfillsDischargingtoWWTPs_13]);
+        map.on("zoomend", function(){
+            resetLabels([layer_WaterIntakesWithdrawals_8,layer_LeachateFlowsGallonsPerDay_9,layer_WastewaterFacilitiesbyLeachateVolumeReceivedGallonsPerYear_10,layer_InactiveLandfillsDischargingtoWWTPs_12,layer_ActiveLandfillsDischargingtoWWTPs_13]);
+        });
+        map.on("layeradd", function(){
+            resetLabels([layer_WaterIntakesWithdrawals_8,layer_LeachateFlowsGallonsPerDay_9,layer_WastewaterFacilitiesbyLeachateVolumeReceivedGallonsPerYear_10,layer_InactiveLandfillsDischargingtoWWTPs_12,layer_ActiveLandfillsDischargingtoWWTPs_13]);
+        });
+        map.on("layerremove", function(){
+            resetLabels([layer_WaterIntakesWithdrawals_8,layer_LeachateFlowsGallonsPerDay_9,layer_WastewaterFacilitiesbyLeachateVolumeReceivedGallonsPerYear_10,layer_InactiveLandfillsDischargingtoWWTPs_12,layer_ActiveLandfillsDischargingtoWWTPs_13]);
+        });
+        </script>
+    </body>
 </html>
-
