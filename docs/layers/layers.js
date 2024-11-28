@@ -23,7 +23,7 @@ var lyr_StateBoundaries_1 = new ol.layer.Vector({
                 source:jsonSource_StateBoundaries_1, 
                 style: style_StateBoundaries_1,
                 popuplayertitle: "State Boundaries",
-                interactive: false,
+                interactive: true,
                 title: '<img src="styles/legend/StateBoundaries_1.png" /> State Boundaries'
             });
 var format_StudyArea_2 = new ol.format.GeoJSON();
@@ -38,7 +38,7 @@ var lyr_StudyArea_2 = new ol.layer.Vector({
                 source:jsonSource_StudyArea_2, 
                 style: style_StudyArea_2,
                 popuplayertitle: "Study Area",
-                interactive: false,
+                interactive: true,
                 title: '<img src="styles/legend/StudyArea_2.png" /> Study Area'
             });
 var format_CountyBoundaries_3 = new ol.format.GeoJSON();
@@ -53,7 +53,7 @@ var lyr_CountyBoundaries_3 = new ol.layer.Vector({
                 source:jsonSource_CountyBoundaries_3, 
                 style: style_CountyBoundaries_3,
                 popuplayertitle: "County Boundaries",
-                interactive: false,
+                interactive: true,
                 title: '<img src="styles/legend/CountyBoundaries_3.png" /> County Boundaries'
             });
 var format_TownBoundaries_4 = new ol.format.GeoJSON();
@@ -70,7 +70,7 @@ maxResolution:56.00893230452392,
  
                 style: style_TownBoundaries_4,
                 popuplayertitle: "Town Boundaries",
-                interactive: false,
+                interactive: true,
                 title: '<img src="styles/legend/TownBoundaries_4.png" /> Town Boundaries'
             });
 var format_Villages_5 = new ol.format.GeoJSON();
@@ -85,7 +85,7 @@ var lyr_Villages_5 = new ol.layer.Vector({
                 source:jsonSource_Villages_5, 
                 style: style_Villages_5,
                 popuplayertitle: "Villages",
-                interactive: false,
+                interactive: true,
                 title: '<img src="styles/legend/Villages_5.png" /> Villages'
             });
 var format_Cities_6 = new ol.format.GeoJSON();
@@ -100,7 +100,7 @@ var lyr_Cities_6 = new ol.layer.Vector({
                 source:jsonSource_Cities_6, 
                 style: style_Cities_6,
                 popuplayertitle: "Cities",
-                interactive: false,
+                interactive: true,
                 title: '<img src="styles/legend/Cities_6.png" /> Cities'
             });
 var format_RiversStreams_7 = new ol.format.GeoJSON();
@@ -115,7 +115,7 @@ var lyr_RiversStreams_7 = new ol.layer.Vector({
                 source:jsonSource_RiversStreams_7, 
                 style: style_RiversStreams_7,
                 popuplayertitle: "Rivers & Streams",
-                interactive: false,
+                interactive: true,
                 title: '<img src="styles/legend/RiversStreams_7.png" /> Rivers & Streams'
             });
 var format_NYSPotentialEnvironmentalJusticeAreas_8 = new ol.format.GeoJSON();
@@ -130,7 +130,7 @@ var lyr_NYSPotentialEnvironmentalJusticeAreas_8 = new ol.layer.Vector({
                 source:jsonSource_NYSPotentialEnvironmentalJusticeAreas_8, 
                 style: style_NYSPotentialEnvironmentalJusticeAreas_8,
                 popuplayertitle: "NYS Potential Environmental Justice Areas",
-                interactive: false,
+                interactive: true,
                 title: '<img src="styles/legend/NYSPotentialEnvironmentalJusticeAreas_8.png" /> NYS Potential Environmental Justice Areas'
             });
 var format_MunicipalitiesServedbyHudsonMohawkRivers_9 = new ol.format.GeoJSON();
@@ -228,12 +228,84 @@ var group_FacilityLeachateInformation = new ol.layer.Group({
                                 fold: "open",
                                 title: "Facility & Leachate Information"});
 var group_Basemap = new ol.layer.Group({
-                                layers: [lyr_Basemap_0,lyr_StateBoundaries_1,lyr_StudyArea_2,lyr_CountyBoundaries_3,lyr_TownBoundaries_4,lyr_Villages_5,lyr_Cities_6,lyr_RiversStreams_7,lyr_NYSPotentialEnvironmentalJusticeAreas_8,],
+                                layers: [],
                                 fold: "open",
                                 title: "Basemap"});
+var group_WorkingMap = new ol.layer.Group({
+                                layers: [],
+                                fold: "open",
+                                title: "Working Map"});
+var group_SourceData = new ol.layer.Group({
+                                layers: [],
+                                fold: "open",
+                                title: "Source Data"});
+var group_0StudyArea = new ol.layer.Group({
+                                layers: [],
+                                fold: "open",
+                                title: "0. Study Area"});
+var group_a = new ol.layer.Group({
+                                layers: [],
+                                fold: "open",
+                                title: "a"});
+var group_b = new ol.layer.Group({
+                                layers: [],
+                                fold: "open",
+                                title: "b"});
+var group_c = new ol.layer.Group({
+                                layers: [],
+                                fold: "open",
+                                title: "c"});
+var group_a = new ol.layer.Group({
+                                layers: [],
+                                fold: "open",
+                                title: "a. "});
+var group_b = new ol.layer.Group({
+                                layers: [],
+                                fold: "open",
+                                title: "b. "});
+var group_c = new ol.layer.Group({
+                                layers: [],
+                                fold: "open",
+                                title: "c. "});
+var group_5Cohoes = new ol.layer.Group({
+                                layers: [],
+                                fold: "open",
+                                title: "5. Cohoes"});
+var group_6GreatFlatsMohawkReview = new ol.layer.Group({
+                                layers: [],
+                                fold: "open",
+                                title: "6. Great Flats & Mohawk Review"});
+var group_7AlbanyRegion = new ol.layer.Group({
+                                layers: [],
+                                fold: "open",
+                                title: "7. Albany Region"});
+var group_Saugerties = new ol.layer.Group({
+                                layers: [],
+                                fold: "open",
+                                title: "Saugerties"});
+var group_Catskill = new ol.layer.Group({
+                                layers: [],
+                                fold: "open",
+                                title: "Catskill"});
+var group_Kingston = new ol.layer.Group({
+                                layers: [],
+                                fold: "open",
+                                title: "Kingston"});
+var group_Poughkeepsie = new ol.layer.Group({
+                                layers: [],
+                                fold: "open",
+                                title: "Poughkeepsie"});
+var group_Beacon = new ol.layer.Group({
+                                layers: [],
+                                fold: "open",
+                                title: "Beacon"});
+var group_StoryMap = new ol.layer.Group({
+                                layers: [],
+                                fold: "open",
+                                title: "StoryMap"});
 
 lyr_Basemap_0.setVisible(true);lyr_StateBoundaries_1.setVisible(true);lyr_StudyArea_2.setVisible(true);lyr_CountyBoundaries_3.setVisible(true);lyr_TownBoundaries_4.setVisible(true);lyr_Villages_5.setVisible(true);lyr_Cities_6.setVisible(true);lyr_RiversStreams_7.setVisible(true);lyr_NYSPotentialEnvironmentalJusticeAreas_8.setVisible(false);lyr_MunicipalitiesServedbyHudsonMohawkRivers_9.setVisible(true);lyr_LeachateFlowsgalyear_10.setVisible(false);lyr_LandfillsContributingLeachategalyear_11.setVisible(false);lyr_WWTPsReceivingLeachategalyear_12.setVisible(false);lyr_DrinkingWaterIntakespopserved_13.setVisible(false);
-var layersList = [group_Basemap,group_FacilityLeachateInformation];
+var layersList = [lyr_Basemap_0,lyr_StateBoundaries_1,lyr_StudyArea_2,lyr_CountyBoundaries_3,lyr_TownBoundaries_4,lyr_Villages_5,lyr_Cities_6,lyr_RiversStreams_7,lyr_NYSPotentialEnvironmentalJusticeAreas_8,group_FacilityLeachateInformation];
 lyr_StateBoundaries_1.set('fieldAliases', {'fid': 'fid', 'STATEFP': 'STATEFP', 'STATENS': 'STATENS', 'AFFGEOID': 'AFFGEOID', 'GEOID': 'GEOID', 'STUSPS': 'STUSPS', 'NAME': 'NAME', 'LSAD': 'LSAD', 'ALAND': 'ALAND', 'AWATER': 'AWATER', });
 lyr_StudyArea_2.set('fieldAliases', {'fid': 'fid', 'id': 'id', 'objectid': 'objectid', 'name': 'name', 'area': 'area', });
 lyr_CountyBoundaries_3.set('fieldAliases', {'fid': 'fid', 'OBJECTID': 'OBJECTID', 'NAME': 'NAME', 'ABBREV': 'ABBREV', 'GNIS_ID': 'GNIS_ID', 'FIPS_CODE': 'FIPS_CODE', 'SWIS': 'SWIS', 'NYSP_ZONE': 'NYSP_ZONE', 'POP1990': 'POP1990', 'POP2000': 'POP2000', 'POP2010': 'POP2010', 'POP2020': 'POP2020', 'DOS_LL': 'DOS_LL', 'DOSLL_DATE': 'DOSLL_DATE', 'NYC': 'NYC', 'CALC_SQ_MI': 'CALC_SQ_MI', 'DATEMOD': 'DATEMOD', });
@@ -270,9 +342,9 @@ lyr_RiversStreams_7.set('fieldLabels', {'fid': 'inline label - always visible', 
 lyr_NYSPotentialEnvironmentalJusticeAreas_8.set('fieldLabels', {'fid': 'inline label - always visible', 'OBJECTID': 'inline label - always visible', 'GEOID_DATA': 'inline label - always visible', 'BPOVRATE': 'inline label - always visible', 'MINPOPCOUNT': 'inline label - always visible', 'MINPOPRATE': 'inline label - always visible', 'PEJA': 'inline label - always visible', 'in_dw_area': 'no label', });
 lyr_MunicipalitiesServedbyHudsonMohawkRivers_9.set('fieldLabels', {'id': 'hidden field', 'muni_name': 'inline label - always visible', 'muni_type': 'inline label - always visible', 'num_intakes': 'inline label - always visible', 'num_pws': 'inline label - always visible', 'tot_pop': 'inline label - always visible', 'num_viols': 'hidden field', 'source_name': 'inline label - always visible', });
 lyr_LeachateFlowsgalyear_10.set('fieldLabels', {'id': 'hidden field', 'src_name': 'inline label - always visible', 'dest_name': 'inline label - always visible', 'avg_gal_yr': 'inline label - always visible', 'avg_gal_day': 'inline label - always visible', 'avg_cost_gal': 'inline label - always visible', 'dest_spdes': 'hidden field', });
-lyr_LandfillsContributingLeachategalyear_11.set('fieldLabels', {'src_name': 'inline label - always visible', 'disp_name': 'hidden field', 'disp_name_2': 'hidden field', 'tot_gal_yr_out': 'inline label - always visible', 'tot_gal_day_out': 'inline label - always visible', });
-lyr_WWTPsReceivingLeachategalyear_12.set('fieldLabels', {'dest_name': 'inline label - always visible', 'disp_name': 'hidden field', 'disp_name_2': 'hidden field', 'tot_gal_yr_in': 'inline label - always visible', 'tot_gal_day_in': 'inline label - always visible', 'avg_cost_gal': 'inline label - always visible', 'num_landfills_in': 'inline label - always visible', 'dest_spdes': 'hidden field', });
-lyr_DrinkingWaterIntakespopserved_13.set('fieldLabels', {'intake_f_name': 'inline label - always visible', 'disp_name': 'hidden field', 'disp_name_2': 'hidden field', 'total_pop': 'inline label - always visible', });
+lyr_LandfillsContributingLeachategalyear_11.set('fieldLabels', {'src_name': 'inline label - always visible', 'disp_name': 'no label', 'disp_name_2': 'no label', 'tot_gal_yr_out': 'inline label - always visible', 'tot_gal_day_out': 'inline label - always visible', });
+lyr_WWTPsReceivingLeachategalyear_12.set('fieldLabels', {'dest_name': 'inline label - always visible', 'disp_name': 'no label', 'disp_name_2': 'no label', 'tot_gal_yr_in': 'inline label - always visible', 'tot_gal_day_in': 'inline label - always visible', 'avg_cost_gal': 'inline label - always visible', 'num_landfills_in': 'inline label - always visible', 'dest_spdes': 'hidden field', });
+lyr_DrinkingWaterIntakespopserved_13.set('fieldLabels', {'intake_f_name': 'inline label - always visible', 'disp_name': 'no label', 'disp_name_2': 'no label', 'total_pop': 'inline label - always visible', });
 lyr_DrinkingWaterIntakespopserved_13.on('precompose', function(evt) {
     evt.context.globalCompositeOperation = 'normal';
 });

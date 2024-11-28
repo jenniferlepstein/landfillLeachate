@@ -112,8 +112,8 @@ var featureOverlay = new ol.layer.Vector({
     updateWhileInteracting: true // optional, for instant visual feedback
 });
 
-var doHighlight = true;
-var doHover = true;
+var doHighlight = false;
+var doHover = false;
 
 function createPopupField(currentFeature, currentFeatureKeys, layer) {
     var popupText = '';
@@ -433,56 +433,7 @@ var bottomRightContainerDiv = document.getElementById('bottom-right-container')
 
 //title
 
-var Title = new ol.control.Control({
-    element: (() => {
-        var titleElement = document.createElement('div');
-        titleElement.className = 'top-left-title ol-control';
-        titleElement.innerHTML = '<h2 class="project-title">The "Leachate Loophole"</h2>';
-        return titleElement;
-    })(),
-    target: 'top-left-container'
-});
-map.addControl(Title)
-    
 //abstract
-
-var Abstract = new ol.control.Control({
-    element: (() => {
-        var titleElement = document.createElement('div');
-        titleElement.className = 'top-left-abstract ol-control';
-        titleElement.id = 'abstract';
-
-        var linkElement = document.createElement('a');
-
-        if (1809 > 240) {
-            linkElement.setAttribute("onmouseenter", "showAbstract()");
-            linkElement.setAttribute("onmouseleave", "hideAbstract()");
-            linkElement.innerHTML = 'i';
-
-            window.hideAbstract = function() {
-                linkElement.classList.add("project-abstract");
-                linkElement.classList.remove("project-abstract-uncollapsed");
-                linkElement.innerHTML = 'i';
-            }
-
-            window.showAbstract = function() {
-                linkElement.classList.remove("project-abstract");
-                linkElement.classList.add("project-abstract-uncollapsed");
-                linkElement.innerHTML = 'The Threat of Landfill Leachate to Drinking Water in the Hudson and Mohawk Rivers<br /><br />A project of the Hudson and Mohawk Rivers Leachate Collaborative: <br />Jen Epstein, Data Analyst; Rebecca Martin, Project Manager; Captain John Lipscomb, Technical Advisor; Pace Environmental Litigation Clinic, Inc., Legal Research; and Good Work Institute, Fiscal Sponsor<br /><br />The Leachate Loophole involves multiple environmental laws, including those that cover solid waste, surface water, and drinking water. Modern landfills must take extensive measures to contain leachate in order to protect neighboring groundwater and streams. Yet, once this leachate is collected, it is common practice to send it to municipal wastewater treatment plants (WWTPs) for disposal. These facilities are not required to remove the harmful substances that are present in leachate, and they are not equipped to do so, even where they discharge into drinking water sources. The burden to remove harmful chemicals is placed on the drinking water treatment plants that draw from these waters, whose operators may not be aware that neighboring WWTPs are accepting leachate. <br /><br />You can use this map to explore the facilities and leachate flows that are involved in the Leachate Loophole in the portions of the Mohawk River and Hudson River Estuary that are used as water drinking supplies: the Mohawk River east of Schenectady, and the Hudson River from New Baltimore to Poughkeepsie. Our geographical focus also includes the section of the Hudson River Estuary that lies in between. Even though drinking water isn’t drawn directly from this area, the waters are all connected.<br /><br />To read about the Leachate Loophole in full detail, check out our Report. <br />To see a guided summary of these leachate flows, use our StoryMap.<br />To donate to our work, click here.';
-            }
-
-            hideAbstract();
-        } else {
-            linkElement.classList.add("project-abstract-uncollapsed");
-            linkElement.innerHTML = 'The Threat of Landfill Leachate to Drinking Water in the Hudson and Mohawk Rivers<br /><br />A project of the Hudson and Mohawk Rivers Leachate Collaborative: <br />Jen Epstein, Data Analyst; Rebecca Martin, Project Manager; Captain John Lipscomb, Technical Advisor; Pace Environmental Litigation Clinic, Inc., Legal Research; and Good Work Institute, Fiscal Sponsor<br /><br />The Leachate Loophole involves multiple environmental laws, including those that cover solid waste, surface water, and drinking water. Modern landfills must take extensive measures to contain leachate in order to protect neighboring groundwater and streams. Yet, once this leachate is collected, it is common practice to send it to municipal wastewater treatment plants (WWTPs) for disposal. These facilities are not required to remove the harmful substances that are present in leachate, and they are not equipped to do so, even where they discharge into drinking water sources. The burden to remove harmful chemicals is placed on the drinking water treatment plants that draw from these waters, whose operators may not be aware that neighboring WWTPs are accepting leachate. <br /><br />You can use this map to explore the facilities and leachate flows that are involved in the Leachate Loophole in the portions of the Mohawk River and Hudson River Estuary that are used as water drinking supplies: the Mohawk River east of Schenectady, and the Hudson River from New Baltimore to Poughkeepsie. Our geographical focus also includes the section of the Hudson River Estuary that lies in between. Even though drinking water isn’t drawn directly from this area, the waters are all connected.<br /><br />To read about the Leachate Loophole in full detail, check out our Report. <br />To see a guided summary of these leachate flows, use our StoryMap.<br />To donate to our work, click here.';
-        }
-
-        titleElement.appendChild(linkElement);
-        return titleElement;
-    })(),
-    target: 'top-left-container'
-});
-map.addControl(Abstract);
 
 
 //geolocate
