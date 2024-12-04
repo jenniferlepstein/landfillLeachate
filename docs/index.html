@@ -21,12 +21,16 @@
 	<link href="resources/ol-geocoder.min.css" rel="stylesheet">
 	<link rel="stylesheet" href="./resources/ol-layerswitcher.css">
 	<link rel="stylesheet" href="./resources/qgis2web.css">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
 
     <!-- My CSS -->
 	<style>
 	html, body {
 		width: 100%;
 		height: 100%;
+		font-family: 'Rubik';
 	}
 	
 	.nav-wrapper, #control-panel {
@@ -78,13 +82,13 @@
 	</style>
 </head>
 
-<body onresize="mapSize()", onload="mapSize()">
+<main> <!-- onresize="mapSize()", onload="mapSize()"-->
 	
 	<!-- Title bar -->
-	<nav class="blue-grey">
-		<div class="nav-wrapper blue-grey">
+	<nav class="">
+		<div class="nav-wrapper blue darken-2">
 			<!-- Title bar for desktop; Hidden for mobile and tablet -->
-			<span class="hide-on-med-and-down"><a class="brand-logo"><b>The Threat of Landfill Leachate to Drinking Water in the Hudson and Mohawk Rivers</b></a></span> 
+			<span class="hide-on-med-and-down"><a class="brand-logo"><b class="white-text">The Threat of Landfill Leachate to Drinking Water in the Hudson and Mohawk Rivers</b></a></span> 
 			<!-- Title bar for mobile and tablet. Hidden for desktop -->
 			<span class="hide-on-large-only"><a class="brand-logo center sidenav-trigger" data-target="slide-out"><i class="large material-icons">info</i></a></span>
 		</div>
@@ -103,19 +107,19 @@
 		</p>
 		<p>
 			You can use this map to explore the impacts of the Leachate Loophole in the portions of the Mohawk River 
-			and Hudson River Estuary that are used as water drinking supplies.
+			and Hudson River that are used as water drinking supplies. <b><a href="">Data sources</a></b>
 		</p>
 		<p>
-			A project of the Hudson and Mohawk Rivers Leachate Collaborative: 
-			Jen Epstein, Data Analyst; Rebecca Martin, Project Manager; Captain John Lipscomb, Technical Advisor; Pace Environmental Litigation Clinic, Inc., 
-			Legal Research; and Good Work Institute, Fiscal Sponsor
-			
-			To read about the Leachate Loophole in full detail, check out our <a href="">Report</a>. 
-			To see a guided summary of these leachate flows, use our <a href="">StoryMap</a>.
-			To donate to our work, <a href="">click here</a>.
+			For more information about the laws and regulations behind the Leachate Loophole, read our <b><a href="">Report</a></b>. 
+			To see more information about where these leachate flows are occurring in the project area, check out our <b><a href="">StoryMap</a></b>.
+			To support our advocacy work, please consider making a <b><a href="">Donation</a></b>. Our project is fiscally sponsored by Good Work Institute, a 501(c)(3) 
+			public charity. Contributions of any size for the charitable purposes of our project can be made payable to the Good Work Institute and are tax-deductible to the extent permitted by law.
 		</p>
-		<p class="flow-text">
-			<a href="">Data sources</a>
+		<p>
+			<b>The Hudson and Mohawk Rivers Leachate Collaborative</b> is Jen Epstein (Data Analyst), Rebecca Martin (Project Manager), 
+			Leah Rae (Communications Manager) and Captain John Lipscomb (Technical Advisor).
+			This project was made possible by the generous support of Red Elm Tree Foundation, Julianna Margulies and Keith Lieberthal, and Forrest and Trisha Warren. 
+			For more information, contact Rebecca Martin, Project Manager at rebeccamartinconsulting@gmail.com or visit <b><a href="https://www.leachateloophole.org">www.leachateloophole.org</a></b>.
 		</p>
 		<p>
 		<a class="sidenav-close"><i class="material-icons">exit_to_app</i></a>
@@ -123,9 +127,9 @@
     </div>
 	
     <div class="wide-container"> <!-- Start of Materialize container -->
-		<div class="row brown lighten-5"> <!-- Row for the side panel and main map -->
+		<div class="row white"> <!-- Row for the side panel and main map -->
 			<div id="control-panel" class="col l3 hide-on-med-and-down"> <!-- side panel div visible only on desktop; content moves to sidebar on tablet and mobile -->
-				<p>
+				<p class="flow text">
 					The Leachate Loophole involves multiple environmental laws, including those that cover solid waste, surface water, and drinking water. 
 					Modern landfills must take extensive measures to contain leachate in order to protect neighboring groundwater and streams. 
 					Yet, once this leachate is collected, it is common practice to send it to municipal wastewater treatment plants (WWTPs) for disposal. 
@@ -133,24 +137,18 @@
 					even where they discharge into drinking water sources. The burden to remove harmful chemicals is placed on the drinking water treatment 
 					plants that draw from these waters, whose operators may not be aware that neighboring WWTPs are accepting leachate. 
 				</p>
-				<p>
+				<p class="flow text">
 					You can use this map to explore the impacts of the Leachate Loophole in the portions of the Mohawk River 
-					and Hudson River Estuary that are used as water drinking supplies.</p>
-				<p>
-					A project of the Hudson and Mohawk Rivers Leachate Collaborative: 
-					Jen Epstein, Data Analyst; Rebecca Martin, Project Manager; Captain John Lipscomb, Technical Advisor; Pace Environmental Litigation Clinic, Inc., 
-					Legal Research; and Good Work Institute, Fiscal Sponsor
-	
-					To read about the Leachate Loophole in full detail, check out our <a href="">Report</a>. 
-					To see a guided summary of these leachate flows, use our <a href="">StoryMap</a>.
-					To donate to our work, <a href="">click here</a>.
+					and Hudson River Estuary that are used as water drinking supplies. <b><a href="">Data sources</a></b></p>
+				<p class="flow text">
+					For more information about the laws and regulations behind the Leachate Loophole, read our <b><a href="">Report</a></b>. 
+					To see more information about where these leachate flows are occurring in the project area, check out our <b><a href="">StoryMap</a></b>.
+					To support our advocacy work, please consider making a <b><a href="">Donation</a></b>. Our project is fiscally sponsored by Good Work Institute, a 501(c)(3) 
+					public charity. Contributions of any size for the charitable purposes of our project can be made payable to the Good Work Institute and are tax-deductible to the extent permitted by law.
 				</p>
-				<p class="flow-text">
-					<a href="">Data sources</a>
-				</p>		
 			</div>
             
-			<div id="mapcol" class="col s12 l9"> <!--height="500px">-->
+			<div id="mapcol" class="col s12 l9"> <!--height="800px"-->
 			
 				<div id="map">
 					<div id="popup" class="ol-popup">
@@ -173,11 +171,11 @@
 	// Function to get available window size and use it to calculate size of map div so that it fills window height
     // This is necessary because map div doesn't work with a percentage based height
     // Variable wih = window inner height; mapHeight is calculated by subtracting the navbar height (65)
-	function mapSize() { 
-		const wih = window.innerHeight;
-        const mapHeight = wih - 65;
-        document.getElementById("mapcol").style.height = mapHeight + 'px';
-    };
+//	function mapSize() { 
+//		const wih = window.innerHeight;
+//        const mapHeight = wih - 65;
+//        document.getElementById("mapcol").style.height = mapHeight + 'px';
+//    };
 </script>
 
 <!-- qgis2web scripts --> 
@@ -192,6 +190,21 @@
 <script src="./resources/Autolinker.min.js"></script>
 <script src="./resources/qgis2web.js"></script>
 
-</body>
-</html>
+</main>
 
+<footer class="page-footer blue darken-2">
+	<div class="container">
+	  <div class="row">
+		<div class="col s12">
+			<p class="text-white">
+				<b>The Hudson and Mohawk Rivers Leachate Collaborative</b> is Jen Epstein (Data Analyst), Rebecca Martin (Project Manager), 
+				Leah Rae (Communications Manager) and Captain John Lipscomb (Technical Advisor).
+				This project was made possible by the generous support of Red Elm Tree Foundation, Julianna Margulies and Keith Lieberthal, and Forrest and Trisha Warren. 
+				For more information, contact Rebecca Martin, Project Manager at: rebeccamartinconsulting@gmail.com or visit www.leachateloophole.org.
+			</p>
+		</div>
+	  </div>
+	</div>
+</footer>
+
+</html>
