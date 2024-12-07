@@ -17,7 +17,7 @@ var style_DrinkingWaterIntakespopserved_13 = function(feature, resolution){
     var offsetX = 8;
     var offsetY = 3;
     var placement = 'point';
-    if (feature.get("disp_name_2") !== null && resolution > 0 && resolution < 336) {
+    if (feature.get("disp_name_2") !== null && resolution > 0 && resolution < 140) {
         labelText = String(feature.get("disp_name_2"));
     }
     if (value >= 1900.000000 && value <= 12800.000000) {

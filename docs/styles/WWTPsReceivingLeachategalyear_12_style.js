@@ -17,7 +17,7 @@ var style_WWTPsReceivingLeachategalyear_12 = function(feature, resolution){
     var offsetX = 8;
     var offsetY = 3;
     var placement = 'point';
-    if (feature.get("disp_name_2") !== null && resolution > 0 && resolution < 336) {
+    if (feature.get("disp_name_2") !== null && resolution > 0 && resolution < 140) {
         labelText = String(feature.get("disp_name_2"));
     }
     if (value >= 1000.000000 && value <= 4138967.000000) {

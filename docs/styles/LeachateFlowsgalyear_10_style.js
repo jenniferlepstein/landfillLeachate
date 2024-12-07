@@ -17,8 +17,8 @@ var style_LeachateFlowsgalyear_10 = function(feature, resolution){
     var offsetX = 8;
     var offsetY = 3;
     var placement = 'line';
-    if (feature.get(" format_number(\"avg_gal_yr\")") !== null && resolution > 0 && resolution < 49) {
-        labelText = String(feature.get(" format_number(\"avg_gal_yr\")"));
+    if ("" !== null && resolution > 0 && resolution < 49) {
+        labelText = String("");
     }
     if (value >= 1000.000000 && value <= 2943725.000000) {
             style = [ new ol.style.Style({
