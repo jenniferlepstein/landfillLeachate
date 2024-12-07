@@ -22,21 +22,21 @@ var style_DrinkingWaterIntakespopserved_13 = function(feature, resolution){
     }
     if (value >= 1900.000000 && value <= 12800.000000) {
             style = [ new ol.style.Style({
-        image: new ol.style.Circle({radius: 4.0 + size,
+        image: new ol.style.Circle({radius: 4.8 + size,
             stroke: new ol.style.Stroke({color: 'rgba(35,35,35,1.0)', lineDash: null, lineCap: 'butt', lineJoin: 'miter', width: 0.0}), fill: new ol.style.Fill({color: 'rgba(29,175,173,1.0)'})}),
         text: createTextStyle(feature, resolution, labelText, labelFont,
                               labelFill, placement, bufferColor,
                               bufferWidth)
     })]
-                    } else if (value >= 12800.000000 && value <= 35750.000000) {
+                    } else if (value >= 12800.000000 && value <= 28000.000000) {
             style = [ new ol.style.Style({
-        image: new ol.style.Circle({radius: 6.0 + size,
+        image: new ol.style.Circle({radius: 6.4 + size,
             stroke: new ol.style.Stroke({color: 'rgba(35,35,35,1.0)', lineDash: null, lineCap: 'butt', lineJoin: 'miter', width: 0.0}), fill: new ol.style.Fill({color: 'rgba(29,175,173,1.0)'})}),
         text: createTextStyle(feature, resolution, labelText, labelFont,
                               labelFill, placement, bufferColor,
                               bufferWidth)
     })]
-                    } else if (value >= 35750.000000 && value <= 85590.000000) {
+                    } else if (value >= 28000.000000 && value <= 85590.000000) {
             style = [ new ol.style.Style({
         image: new ol.style.Circle({radius: 8.0 + size,
             stroke: new ol.style.Stroke({color: 'rgba(35,35,35,1.0)', lineDash: null, lineCap: 'butt', lineJoin: 'miter', width: 0.0}), fill: new ol.style.Fill({color: 'rgba(29,175,173,1.0)'})}),

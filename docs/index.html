@@ -1,66 +1,19 @@
+<!doctype html>
 <html lang="en">
-<head>
-    <title>The "Leachate Loophole"</title>
-    <meta charset="UTF-8"> 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-
-    <!-- Materialize -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"/> 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-
-	<!-- icons -->
-	 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-
-	<!-- qgis2web plug in meta and links -->
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<!-- <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width"> -->
-	<meta name="mobile-web-app-capable" content="yes">
-	<meta name="apple-mobile-web-app-capable" content="yes">
-	<link rel="stylesheet" href="./resources/ol.css">
-	<link rel="stylesheet" href="resources/fontawesome-all.min.css">
-	<link href="resources/ol-geocoder.min.css" rel="stylesheet">
-	<link rel="stylesheet" href="./resources/ol-layerswitcher.css">
-	<link rel="stylesheet" href="./resources/qgis2web.css">
-	<link rel="preconnect" href="https://fonts.googleapis.com">
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
-
-    <!-- My CSS -->
-	<style>
-	html, body {
-		width: 100%;
-		height: 100%;
-		font-family: 'Rubik';
-	}
-	
-	.nav-wrapper, #control-panel {
-		padding-left: 24px;
-	}
-	
-	.flow-text {
-		font-size: 14px;
-	}
-	
-	.big {
-		font-size: 16px;
-	}
-	
-	.title {
-		font-size: 20px;
-	}
-	
-	#map {
-		height: 550px;
-	}
-	
-	#slide-out {
-		padding-left: 12px;
-		padding-right: 6px;
-	}
-	</style>
-
-	<!-- qgis2web style -->
-	<style>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="./resources/ol.css">
+        <link rel="stylesheet" href="resources/fontawesome-all.min.css">
+        <link rel="stylesheet" href="./resources/ol-layerswitcher.css">
+        <link rel="stylesheet" href="./resources/qgis2web.css">
+        <style>
+        html, body {
+            background-color: #ffffff;
+        }
         .ol-control > * {
             background-color: #f8f8f8!important;
             color: #444444!important;
@@ -79,134 +32,35 @@
             background-color: rgba(255,255,255,.4) !important;
             padding: 2px !important;
         } 
-	</style>
-</head>
+        </style>
 
-<main> <!-- onresize="mapSize()", onload="mapSize()"-->
-	
-	<!-- Title bar -->
-	<nav class="">
-		<div class="nav-wrapper blue darken-2">
-			<!-- Title bar for desktop; Hidden for mobile and tablet -->
-			<span class="hide-on-med-and-down"><a class="brand-logo"><b class="white-text">The Threat of Landfill Leachate to Drinking Water in the Hudson and Mohawk Rivers</b></a></span> 
-			<!-- Title bar for mobile and tablet. Hidden for desktop -->
-			<span class="hide-on-large-only"><a class="brand-logo center sidenav-trigger" data-target="slide-out"><i class="large material-icons">info</i></a></span>
-		</div>
-	</nav>
-	
-	<!-- Sidebar, shows on mobile and tablets -->
-	<div id="slide-out" class="sidenav">
-        <p><b>The Threat of Landfill Leachate to Drinking Water in the Hudson and Mohawk Rivers</b></p>
-		<p>
-			The Leachate Loophole involves multiple environmental laws, including those that cover solid waste, surface water, and drinking water. 
-			Modern landfills must take extensive measures to contain leachate in order to protect neighboring groundwater and streams. 
-			Yet, once this leachate is collected, it is common practice to send it to municipal wastewater treatment plants (WWTPs) for disposal. 
-			These facilities are not required to remove the harmful substances that are present in leachate, and they are not equipped to do so, 
-			even where they discharge into drinking water sources. The burden to remove harmful chemicals is placed on the drinking water treatment 
-			plants that draw from these waters, whose operators may not be aware that neighboring WWTPs are accepting leachate. 
-		</p>
-		<p>
-			You can use this map to explore the impacts of the Leachate Loophole in the portions of the Mohawk River 
-			and Hudson River that are used as water drinking supplies. <b><a href="">Data sources</a></b>
-		</p>
-		<p>
-			For more information about the laws and regulations behind the Leachate Loophole, read our <b><a href="">Report</a></b>. 
-			To see how the Leachate Loophole works, check out our <b><a href="">StoryMap</a></b>.
-			To support our advocacy work, please consider making a <b><a href="">Donation</a></b>. Our project is fiscally sponsored by Good Work Institute, a 501(c)(3) 
-			public charity. Contributions of any size for the charitable purposes of our project can be made payable to the Good Work Institute and are tax-deductible to the extent permitted by law.
-		</p>
-		<p>
-			<b>The Hudson and Mohawk Rivers Leachate Collaborative</b> is Jen Epstein, GIS Analyst and Lead Writer; Rebecca Martin, Project Manager;  
-			Leah Rae, Communications Manager; and Captain John Lipscomb, Technical Advisor.
-		</p>
-		<p>
-			For more information, contact Rebecca Martin, Project Manager at rebeccamartinconsulting@gmail.com or visit <a href="">www.leachateloophole.org</a>.
-		</p>
-		<p>
-			<a class="sidenav-close"><i class="material-icons">exit_to_app</i></a>
-		</p>
-    </div>
-	
-    <div class="wide-container"> <!-- Start of Materialize container -->
-		<div class="row white"> <!-- Row for the side panel and main map -->
-			<div id="control-panel" class="col l3 hide-on-med-and-down"> <!-- side panel div visible only on desktop; content moves to sidebar on tablet and mobile -->
-				<p class="flow text">
-					The Leachate Loophole involves multiple environmental laws, including those that cover solid waste, surface water, and drinking water. 
-					Modern landfills must take extensive measures to contain leachate in order to protect neighboring groundwater and streams. 
-					Yet, once this leachate is collected, it is common practice to send it to municipal wastewater treatment plants (WWTPs) for disposal. 
-					These facilities are not required to remove the harmful substances that are present in leachate, and they are not equipped to do so, 
-					even where they discharge into drinking water sources. The burden to remove harmful chemicals is placed on the drinking water treatment 
-					plants that draw from these waters, whose operators may not be aware that neighboring WWTPs are accepting leachate. 
-				</p>
-				<p class="flow text">
-					You can use this map to explore the impacts of the Leachate Loophole in the portions of the Mohawk River 
-					and Hudson River Estuary that are used as water drinking supplies. <b><a href="">Data sources</a></b></p>
-				<p class="flow text">
-					For more information about the laws and regulations behind the Leachate Loophole, read our <b><a href="">Report</a></b>. 
-					To see how the Leachate Loophole works, check out our <b><a href="">StoryMap</a></b>.
-					To support our advocacy work, please consider making a <b><a href="">Donation</a></b>. Our project is fiscally sponsored by Good Work Institute, a 501(c)(3) 
-					public charity. Contributions of any size for the charitable purposes of our project can be made payable to the Good Work Institute and are tax-deductible to the extent permitted by law.
-				</p>
-			</div>
-            
-			<div id="mapcol" class="col s12 l9"> <!--height="800px"-->
-			
-				<div id="map">
-					<div id="popup" class="ol-popup">
-						<a href="#" id="popup-closer" class="ol-popup-closer"></a>
-						<div id="popup-content"></div>
-					</div>
-				</div>   
-
-			</div>
-		</div> <!-- End row for the side panel and main map -->
-	</div> <!-- End Materialize container -->
-
-<script>	
-	// Function to activate sidebar
-	document.addEventListener('DOMContentLoaded', function() {
-       var elems = document.querySelectorAll('.sidenav');
-       var instances = M.Sidenav.init(elems);
-    });
-	
-	// Function to get available window size and use it to calculate size of map div so that it fills window height
-    // This is necessary because map div doesn't work with a percentage based height
-    // Variable wih = window inner height; mapHeight is calculated by subtracting the navbar height (65)
-//	function mapSize() { 
-//		const wih = window.innerHeight;
-//        const mapHeight = wih - 65;
-//        document.getElementById("mapcol").style.height = mapHeight + 'px';
-//    };
-</script>
-
-<!-- qgis2web scripts --> 
-<script src="resources/qgis2web_expressions.js"></script>
-<script src="./resources/functions.js"></script>
-<script src="./resources/ol.js"></script>
-<script src="./resources/ol-layerswitcher.js"></script>
-<script src="resources/ol-geocoder.js"></script>
-<script src="layers/StateBoundaries_1.js"></script><script src="layers/StudyArea_2.js"></script><script src="layers/CountyBoundaries_3.js"></script><script src="layers/TownBoundaries_4.js"></script><script src="layers/Villages_5.js"></script><script src="layers/Cities_6.js"></script><script src="layers/RiversStreams_7.js"></script><script src="layers/NYSPotentialEnvironmentalJusticeAreas_8.js"></script><script src="layers/MunicipalitiesServedbyHudsonMohawkRivers_9.js"></script><script src="layers/LeachateFlowsgalyear_10.js"></script><script src="layers/LandfillsContributingLeachategalyear_11.js"></script><script src="layers/WWTPsReceivingLeachategalyear_12.js"></script><script src="layers/DrinkingWaterIntakespopserved_13.js"></script>
-<script src="styles/StateBoundaries_1_style.js"></script><script src="styles/StudyArea_2_style.js"></script><script src="styles/CountyBoundaries_3_style.js"></script><script src="styles/TownBoundaries_4_style.js"></script><script src="styles/Villages_5_style.js"></script><script src="styles/Cities_6_style.js"></script><script src="styles/RiversStreams_7_style.js"></script><script src="styles/NYSPotentialEnvironmentalJusticeAreas_8_style.js"></script><script src="styles/MunicipalitiesServedbyHudsonMohawkRivers_9_style.js"></script><script src="styles/LeachateFlowsgalyear_10_style.js"></script><script src="styles/LandfillsContributingLeachategalyear_11_style.js"></script><script src="styles/WWTPsReceivingLeachategalyear_12_style.js"></script><script src="styles/DrinkingWaterIntakespopserved_13_style.js"></script>
-<script src="./layers/layers.js" type="text/javascript"></script> 
-<script src="./resources/Autolinker.min.js"></script>
-<script src="./resources/qgis2web.js"></script>
-
-</main>
-
-<footer class="page-footer blue darken-2">
-	<div class="container">
-	  <div class="row">
-		<div class="col s12">
-			<p class="text-white">
-				<b>The Hudson and Mohawk Rivers Leachate Collaborative</b> is Jen Epstein, GIS Analyst and Lead Writer; Rebecca Martin, Project Manager;  
-				Leah Rae, Communications Manager; and Captain John Lipscomb, Technical Advisor.
-			</p>
-			<p>
-				For more information, contact Rebecca Martin, Project Manager at rebeccamartinconsulting@gmail.com or visit <a href="" class="white-text">www.leachateloophole.org</a>.
-			</p>
-		</div>
-	  </div>
-	</div>
-</footer>
-
+        <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        </style>
+        <title>The "Leachate Loophole"</title>
+    </head>
+    <body>
+        <div id="map">
+            <div id="popup" class="ol-popup">
+                <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+                <div id="popup-content"></div>
+            </div>
+        </div>
+        <script src="resources/qgis2web_expressions.js"></script>
+<script src="resources/proj4.js"></script>
+        <script>proj4.defs('EPSG:6347','+proj=utm +zone=18 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');</script>
+        <script src="./resources/functions.js"></script>
+        <script src="./resources/ol.js"></script>
+        <script src="./resources/ol-layerswitcher.js"></script>
+        <script src="layers/StateBoundaries_1.js"></script><script src="layers/StudyArea_2.js"></script><script src="layers/CountyBoundaries_3.js"></script><script src="layers/TownBoundaries_4.js"></script><script src="layers/Villages_5.js"></script><script src="layers/Cities_6.js"></script><script src="layers/Rivers_7.js"></script><script src="layers/NYSPotentialEnvironmentalJusticeAreas_8.js"></script><script src="layers/MunicipalitiesServedbyHudsonMohawkRivers_9.js"></script><script src="layers/LeachateFlowsgalyear_10.js"></script><script src="layers/LandfillsContributingLeachategalyear_11.js"></script><script src="layers/WWTPsReceivingLeachategalyear_12.js"></script><script src="layers/DrinkingWaterIntakespopserved_13.js"></script>
+        <script src="styles/StateBoundaries_1_style.js"></script><script src="styles/StudyArea_2_style.js"></script><script src="styles/CountyBoundaries_3_style.js"></script><script src="styles/TownBoundaries_4_style.js"></script><script src="styles/Villages_5_style.js"></script><script src="styles/Cities_6_style.js"></script><script src="styles/Rivers_7_style.js"></script><script src="styles/NYSPotentialEnvironmentalJusticeAreas_8_style.js"></script><script src="styles/MunicipalitiesServedbyHudsonMohawkRivers_9_style.js"></script><script src="styles/LeachateFlowsgalyear_10_style.js"></script><script src="styles/LandfillsContributingLeachategalyear_11_style.js"></script><script src="styles/WWTPsReceivingLeachategalyear_12_style.js"></script><script src="styles/DrinkingWaterIntakespopserved_13_style.js"></script>
+        <script src="./layers/layers.js" type="text/javascript"></script> 
+        <script src="./resources/Autolinker.min.js"></script>
+        <script src="./resources/qgis2web.js"></script>
+    </body>
 </html>

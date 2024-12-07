@@ -20,21 +20,21 @@ var style_LeachateFlowsgalyear_10 = function(feature, resolution){
     if (feature.get(" format_number(\"avg_gal_yr\")") !== null && resolution > 0 && resolution < 49) {
         labelText = String(feature.get(" format_number(\"avg_gal_yr\")"));
     }
-    if (value >= 1.000000 && value <= 2943725.000000) {
+    if (value >= 1000.000000 && value <= 2943725.000000) {
             style = [ new ol.style.Style({
         stroke: new ol.style.Stroke({color: 'rgba(204,0,14,1.0)', lineDash: null, lineCap: 'square', lineJoin: 'bevel', width: 1.9}),
         text: createTextStyle(feature, resolution, labelText, labelFont,
                               labelFill, placement, bufferColor,
                               bufferWidth)
     })]
-                    } else if (value >= 2943725.000000 && value <= 10491821.000000) {
+                    } else if (value >= 2943725.000000 && value <= 14667479.000000) {
             style = [ new ol.style.Style({
         stroke: new ol.style.Stroke({color: 'rgba(204,0,14,1.0)', lineDash: null, lineCap: 'square', lineJoin: 'bevel', width: 4.369999999999999}),
         text: createTextStyle(feature, resolution, labelText, labelFont,
                               labelFill, placement, bufferColor,
                               bufferWidth)
     })]
-                    } else if (value >= 10491821.000000 && value <= 21573850.000000) {
+                    } else if (value >= 14667479.000000 && value <= 24086437.000000) {
             style = [ new ol.style.Style({
         stroke: new ol.style.Stroke({color: 'rgba(204,0,14,1.0)', lineDash: null, lineCap: 'square', lineJoin: 'bevel', width: 6.84}),
         text: createTextStyle(feature, resolution, labelText, labelFont,

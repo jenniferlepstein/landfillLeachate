@@ -20,7 +20,7 @@ var style_LandfillsContributingLeachategalyear_11 = function(feature, resolution
     if (feature.get("disp_name_2") !== null && resolution > 0 && resolution < 336) {
         labelText = String(feature.get("disp_name_2"));
     }
-    if (value >= 1.000000 && value <= 1968779.000000) {
+    if (value >= 1000.000000 && value <= 2943725.000000) {
             style = [ new ol.style.Style({
         image: new ol.style.RegularShape({radius: 4.8 + size, points: 6,
             stroke: new ol.style.Stroke({color: 'rgba(35,35,35,1.0)', lineDash: null, lineCap: 'butt', lineJoin: 'miter', width: 0.0}), fill: new ol.style.Fill({color: 'rgba(204,0,14,1.0)'})}),
@@ -28,17 +28,17 @@ var style_LandfillsContributingLeachategalyear_11 = function(feature, resolution
                               labelFill, placement, bufferColor,
                               bufferWidth)
     })]
-                    } else if (value >= 1968779.000000 && value <= 8370791.000000) {
+                    } else if (value >= 2943725.000000 && value <= 14667479.000000) {
             style = [ new ol.style.Style({
-        image: new ol.style.RegularShape({radius: 8.4 + size, points: 6,
+        image: new ol.style.RegularShape({radius: 6.4 + size, points: 6,
             stroke: new ol.style.Stroke({color: 'rgba(35,35,35,1.0)', lineDash: null, lineCap: 'butt', lineJoin: 'miter', width: 0.0}), fill: new ol.style.Fill({color: 'rgba(204,0,14,1.0)'})}),
         text: createTextStyle(feature, resolution, labelText, labelFont,
                               labelFill, placement, bufferColor,
                               bufferWidth)
     })]
-                    } else if (value >= 8370791.000000 && value <= 26084190.000000) {
+                    } else if (value >= 14667479.000000 && value <= 24086437.000000) {
             style = [ new ol.style.Style({
-        image: new ol.style.RegularShape({radius: 12.0 + size, points: 6,
+        image: new ol.style.RegularShape({radius: 8.0 + size, points: 6,
             stroke: new ol.style.Stroke({color: 'rgba(35,35,35,1.0)', lineDash: null, lineCap: 'butt', lineJoin: 'miter', width: 0.0}), fill: new ol.style.Fill({color: 'rgba(204,0,14,1.0)'})}),
         text: createTextStyle(feature, resolution, labelText, labelFont,
                               labelFill, placement, bufferColor,
